@@ -1,0 +1,5 @@
+rootProject.name = 'jlite'
+include 'jlite-web'
+include 'example'
+include 'jlite-data'
+

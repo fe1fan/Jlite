@@ -1,0 +1,30 @@
+plugins {
+    id 'java'
+}
+
+group 'io.xka.javlite'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+//subprojects {
+//    plugins {
+//        id 'java'
+//        id 'java-library'
+//    }
+//    dependencies {
+//        //jetty
+//        implementation 'org.eclipse.jetty:jetty-server:11.0.13'
+//    }
+//}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+}
+
+test {
+    useJUnitPlatform()
+}

@@ -1,0 +1,44 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group 'io.xka.jlite'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+mainClassName = 'io.xka.jlite.web.example.Application'
+
+dependencies {
+
+    //jetty-server
+    implementation('org.eclipse.jetty:jetty-server:11.0.13') exclude(module: 'slf4j-api')
+    //jetty-servlet
+    implementation 'org.eclipse.jetty:jetty-servlet:11.0.13' exclude(module: 'slf4j-api')
+    //log4j2 api
+    implementation 'org.apache.logging.log4j:log4j-api:2.14.1'
+    //log4j2 core
+    implementation 'org.apache.logging.log4j:log4j-core:2.14.1'
+    //log2j2 slf4j impl
+    implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.14.1'
+    //slf4j api
+    implementation 'org.slf4j:slf4j-api:1.7.32'
+    //gson
+    implementation 'com.google.code.gson:gson:2.8.8'
+    //jackson
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.0'
+    //fastjson2
+    implementation 'com.alibaba:fastjson:2.0.24'
+    //jackson databind yaml
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.0'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+}
+
+test {
+    useJUnitPlatform()
+}

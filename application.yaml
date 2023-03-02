@@ -1,0 +1,6 @@
+host: localhost
+port: 8080
+maxThreads: 10
+minThreads: 2
+blockQueueSize: 1000
+serializer: JACKSON
