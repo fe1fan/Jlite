@@ -1,6 +1,6 @@
 package io.xka.jlite.web.options;
 
-public class ThreadOptions implements IOptions {
+public class ThreadOptions {
 
     private int maxThreads = 100;
 
@@ -11,9 +11,16 @@ public class ThreadOptions implements IOptions {
     private Integer blockQueueSize = 1000;
 
 
-    @Override
-    public IOptions create() {
+    public static ThreadOptions create() {
         return new ThreadOptions();
+    }
+
+    public static ThreadOptions copy(ThreadOptions threadOptions) {
+        return ThreadOptions.create()
+                .maxThreads(threadOptions.maxThreads)
+                .minThreads(threadOptions.minThreads)
+                .idleTimeout(threadOptions.idleTimeout)
+                .blockQueueSize(threadOptions.blockQueueSize);
     }
 
     public ThreadOptions maxThreads(int maxThreads) {

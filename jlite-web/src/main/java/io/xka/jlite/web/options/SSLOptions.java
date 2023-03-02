@@ -16,6 +16,19 @@ public class SSLOptions {
         return new SSLOptions();
     }
 
+    public static SSLOptions copy(SSLOptions sslOptions) {
+        SSLOptions copy = SSLOptions.create()
+
+                .sslPort(sslOptions.sslPort)
+                .keystorePath(sslOptions.keystorePath)
+                .keystorePassword(sslOptions.keystorePassword)
+                .keyManagerPassword(sslOptions.keyManagerPassword);
+        if (sslOptions.isEnableSSL()) {
+            copy.enableSSL();
+        }
+        return copy;
+    }
+
     public SSLOptions enableSSL() {
         this.enableSSL = true;
         return this;

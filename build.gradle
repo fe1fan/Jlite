@@ -2,7 +2,7 @@ plugins {
     id 'java'
 }
 
-group 'io.xka.javlite'
+group 'io.xka.jlite'
 version '1.0-SNAPSHOT'
 
 repositories {

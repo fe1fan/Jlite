@@ -24,8 +24,8 @@ public class Options {
         return Options.create()
                 .host(options.host)
                 .port(options.port)
-                .sslOptions(options.sslOptions)
-                .threadOptions(options.threadOptions)
+                .sslOptions(SSLOptions.copy(options.sslOptions))
+                .threadOptions(ThreadOptions.copy(options.threadOptions))
                 .serializer(options.serializer);
     }
 
