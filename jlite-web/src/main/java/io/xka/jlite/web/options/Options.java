@@ -10,15 +10,9 @@ public class Options {
 
     private int port = 9090;
 
-    private int maxThreads = 100;
-
-    private int minThreads = 10;
-
-    private int idleTimeout = 120;
-
-    private Integer blockQueueSize = 1000;
-
     private SSLOptions sslOptions = new SSLOptions();
+
+    private ThreadOptions threadOptions = new ThreadOptions();
 
     private JsonAdopter.Engine serializer = JsonAdopter.Engine.JACKSON;
 
@@ -28,14 +22,11 @@ public class Options {
 
     public static Options copy(Options options) {
         return Options.create()
-                .host(options.getHost())
-                .port(options.getPort())
-                .maxThreads(options.getMaxThreads())
-                .minThreads(options.getMinThreads())
-                .idleTimeout(options.getIdleTimeout())
-                .blockQueueSize(options.getBlockQueueSize())
-                .sslOptions(options.getSslOptions())
-                .serializer(options.getSerializer());
+                .host(options.host)
+                .port(options.port)
+                .sslOptions(options.sslOptions)
+                .threadOptions(options.threadOptions)
+                .serializer(options.serializer);
     }
 
     public JliteApp quick() {
@@ -57,28 +48,14 @@ public class Options {
         return this;
     }
 
-    public Options maxThreads(int maxThreads) {
-        this.maxThreads = maxThreads;
-        return this;
-    }
-
-    public Options minThreads(int minThreads) {
-        this.minThreads = minThreads;
-        return this;
-    }
-
-    public Options idleTimeout(int idleTimeout) {
-        this.idleTimeout = idleTimeout;
-        return this;
-    }
-
-    public Options blockQueueSize(int blockQueueSize) {
-        this.blockQueueSize = blockQueueSize;
-        return this;
-    }
 
     public Options sslOptions(SSLOptions sslOptions) {
         this.sslOptions = sslOptions;
+        return this;
+    }
+
+    public Options threadOptions(ThreadOptions threadOptions) {
+        this.threadOptions = threadOptions;
         return this;
     }
 
@@ -98,27 +75,17 @@ public class Options {
         return port;
     }
 
-    public int getMaxThreads() {
-        return maxThreads;
-    }
-
-    public int getMinThreads() {
-        return minThreads;
-    }
-
-    public int getIdleTimeout() {
-        return idleTimeout;
-    }
-
-    public Integer getBlockQueueSize() {
-        return blockQueueSize;
-    }
-
     public SSLOptions getSslOptions() {
         return sslOptions;
+    }
+
+
+    public ThreadOptions getThreadOptions() {
+        return threadOptions;
     }
 
     public JsonAdopter.Engine getSerializer() {
         return serializer;
     }
+
 }

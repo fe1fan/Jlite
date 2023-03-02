@@ -2,10 +2,10 @@
 
 ![icon](media/icon.png)
 
-![build](https://github.com/fe1fan/jlite/actions/workflows/gradle.yml/badge.svg)
-![version](https://img.shields.io/github/v/release/fe1fan/jlite)
-![license](https://img.shields.io/github/license/fe1fan/jlite)
-![size](https://img.shields.io/github/repo-size/fe1fan/jlite)
+![build](https://github.com/fe1fan/Jlite/actions/workflows/gradle.yml/badge.svg)
+![version](https://img.shields.io/github/v/release/fe1fan/Jlite)
+![license](https://img.shields.io/github/license/fe1fan/Jlite)
+![size](https://img.shields.io/github/languages/code-size/fe1fan/Jlite)
 
 [//]: # (![stars]&#40;https://img.shields.io/github/stars/fe1fan/jlite&#41;)
 [//]: # (![forks]&#40;https://img.shields.io/github/forks/fe1fan/jlite&#41;)

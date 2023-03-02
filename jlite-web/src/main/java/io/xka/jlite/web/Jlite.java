@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import io.xka.jlite.web.options.Options;
 import io.xka.jlite.web.options.SSLOptions;
+import io.xka.jlite.web.options.ThreadOptions;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,6 +19,11 @@ public class Jlite {
 
     public static SSLOptions sslOptions() {
         return new SSLOptions();
+    }
+
+
+    public static ThreadOptions threadOptions() {
+        return new ThreadOptions();
     }
 
     public static Options yaml(String path) {

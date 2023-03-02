@@ -60,10 +60,10 @@ public class JliteApp {
     public JliteApp() {
         var options = JliteRuntime.getOptions();
         QueuedThreadPool threadPool = new QueuedThreadPool(
-                options.getMaxThreads(),
-                options.getMinThreads(),
-                options.getIdleTimeout(),
-                new BlockingArrayQueue<>(options.getBlockQueueSize())
+                options.getThreadOptions().getMaxThreads(),
+                options.getThreadOptions().getMinThreads(),
+                options.getThreadOptions().getIdleTimeout(),
+                new BlockingArrayQueue<>(options.getThreadOptions().getBlockQueueSize())
         );
         this.server = new Server(threadPool);
         this.init();

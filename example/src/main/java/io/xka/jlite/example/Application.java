@@ -2,7 +2,6 @@ package io.xka.jlite.example;
 
 import io.xka.jlite.web.Jlite;
 import io.xka.jlite.web.JliteApp;
-import io.xka.jlite.web.options.SSLOptions;
 import io.xka.jlite.web.serializer.JsonAdopter;
 
 import java.util.HashMap;
@@ -13,8 +12,12 @@ public class Application {
         JliteApp app = Jlite.options()
                 .host("localhost")
                 .port(8080)
-                .maxThreads(100)
-                .minThreads(10)
+                .threadOptions(
+                        Jlite.threadOptions()
+                                .maxThreads(100)
+                                .minThreads(10)
+                                .idleTimeout(1000)
+                )
                 .serializer(JsonAdopter.Engine.JACKSON)
                 .sslOptions(
                         Jlite.sslOptions()
