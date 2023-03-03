@@ -42,21 +42,30 @@ public class HttpComponents {
         return okHttpClient;
     }
 
-    // simple get
-    public String get(String url) {
+    public <T> T get(String url, Map<String, String> headers, Object object, Class<? extends T> type) {
         return null;
     }
 
-    // simple post
-    public <T> T postJson(String url, Map<String, String> headers, Object body, Class<? extends T> type) {
+    public String get(String url) {
+        return this.get(url, null, null, String.class);
+    }
+
+    public String get(String url, Map<String, String> headers) {
+        return this.get(url, headers, null, String.class);
+    }
+
+    public <T> T post(String url, Map<String, String> headers, Object object, Class<? extends T> type) {
         //create json request body
         RequestBody requestBody = RequestBody.create(
-                this.jsonAdopter.serialize(body),
+                this.jsonAdopter.serialize(object),
                 MediaType.parse("application/json")
         );
-        Request request = new Request.Builder()
-                .url(url)
-                .headers(Headers.of(headers))
+        Request.Builder requestBuilder = new Request.Builder()
+                .url(url);
+        if (headers != null) {
+            requestBuilder.headers(Headers.of(headers));
+        }
+        Request request = requestBuilder
                 .post(requestBody)
                 .build();
         Call call = HttpComponents.getInstance().newCall(request);
@@ -76,5 +85,17 @@ public class HttpComponents {
         } catch (IOException ioException) {
             throw new RuntimeException(ioException);
         }
+    }
+
+    public String post(String url, Map<String, String> headers, Object object) {
+        return this.get(url, headers, object, String.class);
+    }
+
+    public String post(String url, Object object) {
+        return this.get(url, null, object, String.class);
+    }
+
+    public <T> T post(String url, Object object, Class<? extends T> type) {
+        return this.get(url, null, object, type);
     }
 }

@@ -3,7 +3,6 @@ package io.xka.jlite.web.cli.options;
 import io.xka.jlite.web.basic.runtime.JliteRuntime;
 import io.xka.jlite.web.basic.serializer.JsonAdopter;
 import io.xka.jlite.web.cli.JliteCliApp;
-import io.xka.jlite.web.serv.JliteServApp;
 
 public class CliOptions {
 
