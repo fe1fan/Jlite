@@ -73,15 +73,12 @@ public class HttpComponents {
             if (HttpStatus.OK_200 != response.code()) {
                 throw new RuntimeException("http request failed, status code: " + response.code());
             }
-            ResponseBody responseBody = response.body();
-            if (responseBody == null) {
-                throw new RuntimeException("http request failed, response body is null");
-            }
-            String bodyStr = responseBody.string();
+            assert response.body() != null;
+            String bodyStr = response.body().string();
             if (type.equals(String.class)) {
                 return (T) bodyStr;
             }
-            return this.jsonAdopter.deserialize(responseBody.string(), type);
+            return this.jsonAdopter.deserialize(bodyStr, type);
         } catch (IOException ioException) {
             throw new RuntimeException(ioException);
         }
