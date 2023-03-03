@@ -14,6 +14,8 @@ public class ServOptions {
 
     private ThreadOptions threadOptions = new ThreadOptions();
 
+    private CORSOptions corsOptions;
+
     private JsonAdopter.Engine serializer = JsonAdopter.Engine.JACKSON;
 
     private static ServOptions create() {
@@ -26,6 +28,7 @@ public class ServOptions {
                 .port(servOptions.port)
                 .sslOptions(SSLOptions.copy(servOptions.sslOptions))
                 .threadOptions(ThreadOptions.copy(servOptions.threadOptions))
+                .corsOptions(CORSOptions.copy(servOptions.corsOptions))
                 .serializer(servOptions.serializer);
     }
 
@@ -64,6 +67,11 @@ public class ServOptions {
         return this;
     }
 
+    public ServOptions corsOptions(CORSOptions corsOptions) {
+        this.corsOptions = corsOptions;
+        return this;
+    }
+
     /**
      * ---------------- getter ----------------
      */
@@ -82,6 +90,10 @@ public class ServOptions {
 
     public ThreadOptions getThreadOptions() {
         return threadOptions;
+    }
+
+    public CORSOptions getCorsOptions() {
+        return corsOptions;
     }
 
     public JsonAdopter.Engine getSerializer() {

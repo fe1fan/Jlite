@@ -148,4 +148,38 @@ public class IControl {
             throw new RuntimeException(e);
         }
     }
+
+    public void file(int status, String contentType, byte[] file) {
+        httpServletResponse.setStatus(status);
+        httpServletResponse.setContentType(contentType);
+        httpServletResponse.setCharacterEncoding("UTF-8");
+        try(ServletOutputStream outputStream = httpServletResponse.getOutputStream()){
+            outputStream.write(file);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void redirect(String url) {
+        try {
+            httpServletResponse.sendRedirect(url);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void sse(String event, String data) {
+        httpServletResponse.setStatus(HttpStatus.OK_200);
+        httpServletResponse.setContentType("text/event-stream");
+        httpServletResponse.setCharacterEncoding("UTF-8");
+        try (PrintWriter writer = httpServletResponse.getWriter()) {
+            writer.println("event: " + event);
+            writer.println("data: " + data);
+            writer.println();
+            writer.flush();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }
