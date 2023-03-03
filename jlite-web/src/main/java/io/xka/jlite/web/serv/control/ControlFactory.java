@@ -1,4 +1,4 @@
-package io.xka.jlite.web.control;
+package io.xka.jlite.web.serv.control;
 
 import org.eclipse.jetty.http.HttpMethod;
 import org.slf4j.Logger;

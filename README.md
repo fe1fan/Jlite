@@ -26,17 +26,18 @@ This project is still in development, and the API may change at any time.
 implementation 'io.xka.jlite:jlite-[model]:[latest version]'
 ```
 ### Example
+
 ```java
 package io.xka.jlite.web.example;
 
-import io.xka.jlite.web.Jlite;
-import io.xka.jlite.web.JliteApp;
-import io.xka.jlite.web.serializer.JsonAdopter;
+import io.xka.jlite.web.serv.JliteServ;
+import io.xka.jlite.web.serv.JliteServApp;
+import io.xka.jlite.web.serv.serializer.JsonAdopter;
 
 public class Application {
     public static void main(String[] args) {
-        //create from options
-        JliteApp app = Jlite.options()
+        //create from servOptions
+        JliteApp app = Jlite.servOptions()
                 .host("localhost")
                 .port(8080)
                 .maxThreads(100)

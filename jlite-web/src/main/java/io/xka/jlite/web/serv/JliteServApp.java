@@ -1,10 +1,11 @@
-package io.xka.jlite.web;
+package io.xka.jlite.web.serv;
 
-import io.xka.jlite.web.connector.HttpConnector;
-import io.xka.jlite.web.connector.HttpsConnector;
-import io.xka.jlite.web.control.*;
-import io.xka.jlite.web.options.SSLOptions;
-import io.xka.jlite.web.runtime.JliteRuntime;
+import io.xka.jlite.web.serv.connector.HttpConnector;
+import io.xka.jlite.web.serv.connector.HttpsConnector;
+import io.xka.jlite.web.serv.control.*;
+import io.xka.jlite.web.serv.options.SSLOptions;
+import io.xka.jlite.web.basic.runtime.JliteRuntime;
+import io.xka.jlite.web.serv.options.ServOptions;
 import jakarta.servlet.MultipartConfigElement;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.server.Server;
@@ -21,11 +22,11 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public class JliteApp {
+public class JliteServApp {
 
     public static final String VERSION = "alpha-0.0.1";
 
-    Logger logger = LoggerFactory.getLogger(JliteApp.class);
+    Logger logger = LoggerFactory.getLogger(JliteServApp.class);
 
     enum Status {
         STARING, RUNNING, STOPPING, STOPPED
@@ -35,9 +36,10 @@ public class JliteApp {
 
     private final Server server;
 
+    private final ServOptions options;
+
 
     private void init() {
-        var options = JliteRuntime.getOptions();
         SSLOptions sslOptions = options.getSslOptions();
         List<ServerConnector> connectors = new ArrayList<>(2);
         if (sslOptions.isEnableSSL()) {
@@ -57,8 +59,8 @@ public class JliteApp {
     }
 
 
-    public JliteApp() {
-        var options = JliteRuntime.getOptions();
+    public JliteServApp() {
+        this.options = JliteRuntime.getServOptions();
         QueuedThreadPool threadPool = new QueuedThreadPool(
                 options.getThreadOptions().getMaxThreads(),
                 options.getThreadOptions().getMinThreads(),
@@ -70,7 +72,6 @@ public class JliteApp {
     }
 
     private void log() {
-        var options = JliteRuntime.getOptions();
         logger.info("\n     ____.__  .__  __          \n" +
                 "    |    |  | |__|/  |_  ____  \n" +
                 "    |    |  | |  \\   __\\/ __ \\ \n" +
@@ -83,8 +84,7 @@ public class JliteApp {
     }
 
 
-    public synchronized JliteApp run() {
-        var options = JliteRuntime.getOptions();
+    public synchronized JliteServApp run() {
         if (this.STATUS != Status.STOPPED) {
             throw new RuntimeException("server is running");
         }
@@ -116,7 +116,7 @@ public class JliteApp {
         return this;
     }
 
-    public JliteApp stop() {
+    public JliteServApp stop() {
         try {
             this.server.stop();
         } catch (Exception e) {

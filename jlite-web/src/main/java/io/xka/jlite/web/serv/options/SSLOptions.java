@@ -1,4 +1,4 @@
-package io.xka.jlite.web.options;
+package io.xka.jlite.web.serv.options;
 
 public class SSLOptions {
 

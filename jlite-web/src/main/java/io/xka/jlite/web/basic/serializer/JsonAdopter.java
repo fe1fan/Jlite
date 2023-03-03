@@ -1,4 +1,4 @@
-package io.xka.jlite.web.serializer;
+package io.xka.jlite.web.basic.serializer;
 
 public class JsonAdopter {
 

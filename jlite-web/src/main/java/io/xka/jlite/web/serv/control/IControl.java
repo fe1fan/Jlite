@@ -1,7 +1,7 @@
-package io.xka.jlite.web.control;
+package io.xka.jlite.web.serv.control;
 
-import io.xka.jlite.web.runtime.JliteRuntime;
-import io.xka.jlite.web.serializer.JsonAdopter;
+import io.xka.jlite.web.basic.runtime.JliteRuntime;
+import io.xka.jlite.web.basic.serializer.JsonAdopter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.ServletOutputStream;
@@ -34,7 +34,7 @@ public class IControl {
     protected IControl(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
         this.httpServletRequest = httpServletRequest;
         this.httpServletResponse = httpServletResponse;
-        this.jsonAdopter = new JsonAdopter(JliteRuntime.getOptions().getSerializer());
+        this.jsonAdopter = new JsonAdopter(JliteRuntime.getServOptions().getSerializer());
     }
 
     public String getQuery(String name) {

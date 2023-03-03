@@ -1,4 +1,4 @@
-package io.xka.jlite.web.control;
+package io.xka.jlite.web.serv.control;
 
 import java.util.HashMap;
 import java.util.Map;

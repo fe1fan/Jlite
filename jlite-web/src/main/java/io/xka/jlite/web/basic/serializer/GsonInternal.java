@@ -1,4 +1,4 @@
-package io.xka.jlite.web.serializer;
+package io.xka.jlite.web.basic.serializer;
 
 import com.google.gson.Gson;
 

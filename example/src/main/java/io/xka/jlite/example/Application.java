@@ -1,26 +1,30 @@
 package io.xka.jlite.example;
 
-import io.xka.jlite.web.Jlite;
-import io.xka.jlite.web.JliteApp;
-import io.xka.jlite.web.serializer.JsonAdopter;
+import io.xka.jlite.web.cli.JliteCli;
+import io.xka.jlite.web.cli.JliteCliApp;
+import io.xka.jlite.web.cli.components.HttpComponents;
+import io.xka.jlite.web.serv.JliteServ;
+import io.xka.jlite.web.serv.JliteServApp;
+import io.xka.jlite.web.basic.serializer.JsonAdopter;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Application {
     public static void main(String[] args) {
         //create from options
-        JliteApp app = Jlite.options()
+        JliteServApp app = JliteServ.options()
                 .host("localhost")
                 .port(8080)
                 .threadOptions(
-                        Jlite.threadOptions()
+                        JliteServ.threadOptions()
                                 .maxThreads(100)
                                 .minThreads(10)
                                 .idleTimeout(1000)
                 )
                 .serializer(JsonAdopter.Engine.JACKSON)
                 .sslOptions(
-                        Jlite.sslOptions()
+                        JliteServ.sslOptions()
                                 .enableSSL()
                                 .sslPort(8081)
                                 .keystorePath("keystore.jks")
@@ -29,7 +33,10 @@ public class Application {
                 )
                 .quick();
         app.run();
-        app.use("/json", hdl -> {
+        JliteCliApp cli = JliteCli.options()
+                .serializer(JsonAdopter.Engine.JACKSON)
+                .quick();
+        app.use("/", hdl -> {
             String authorization = hdl.getHeader("authorization");
             if (authorization == null || authorization.isBlank()) {
                 //error
@@ -38,16 +45,5 @@ public class Application {
             }
             return true;
         });
-        app.get("/xml/hello", ctl -> ctl.json(new HashMap<>() {
-            {
-                put("hello", "world");
-            }
-        }));
-        app.get("/json/hello", ctl -> ctl.json(new HashMap<>() {
-            {
-                put("hello", "world");
-            }
-        }));
-//        app.stop();
     }
 }

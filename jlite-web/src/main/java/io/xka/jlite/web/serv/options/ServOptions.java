@@ -1,10 +1,10 @@
-package io.xka.jlite.web.options;
+package io.xka.jlite.web.serv.options;
 
-import io.xka.jlite.web.JliteApp;
-import io.xka.jlite.web.runtime.JliteRuntime;
-import io.xka.jlite.web.serializer.JsonAdopter;
+import io.xka.jlite.web.serv.JliteServApp;
+import io.xka.jlite.web.basic.runtime.JliteRuntime;
+import io.xka.jlite.web.basic.serializer.JsonAdopter;
 
-public class Options {
+public class ServOptions {
 
     private String host = "localhost";
 
@@ -16,50 +16,50 @@ public class Options {
 
     private JsonAdopter.Engine serializer = JsonAdopter.Engine.JACKSON;
 
-    private static Options create() {
-        return new Options();
+    private static ServOptions create() {
+        return new ServOptions();
     }
 
-    public static Options copy(Options options) {
-        return Options.create()
-                .host(options.host)
-                .port(options.port)
-                .sslOptions(SSLOptions.copy(options.sslOptions))
-                .threadOptions(ThreadOptions.copy(options.threadOptions))
-                .serializer(options.serializer);
+    public static ServOptions copy(ServOptions servOptions) {
+        return ServOptions.create()
+                .host(servOptions.host)
+                .port(servOptions.port)
+                .sslOptions(SSLOptions.copy(servOptions.sslOptions))
+                .threadOptions(ThreadOptions.copy(servOptions.threadOptions))
+                .serializer(servOptions.serializer);
     }
 
-    public JliteApp quick() {
-        JliteRuntime.setOptions(this);
-        return new JliteApp();
+    public JliteServApp quick() {
+        JliteRuntime.setServOptions(this);
+        return new JliteServApp();
     }
 
 
     /**
      * ---------------- settings ----------------
      */
-    public Options host(String host) {
+    public ServOptions host(String host) {
         this.host = host;
         return this;
     }
 
-    public Options port(int port) {
+    public ServOptions port(int port) {
         this.port = port;
         return this;
     }
 
 
-    public Options sslOptions(SSLOptions sslOptions) {
+    public ServOptions sslOptions(SSLOptions sslOptions) {
         this.sslOptions = sslOptions;
         return this;
     }
 
-    public Options threadOptions(ThreadOptions threadOptions) {
+    public ServOptions threadOptions(ThreadOptions threadOptions) {
         this.threadOptions = threadOptions;
         return this;
     }
 
-    public Options serializer(JsonAdopter.Engine serializer) {
+    public ServOptions serializer(JsonAdopter.Engine serializer) {
         this.serializer = serializer;
         return this;
     }
