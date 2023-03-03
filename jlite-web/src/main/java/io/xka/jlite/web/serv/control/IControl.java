@@ -2,6 +2,8 @@ package io.xka.jlite.web.serv.control;
 
 import io.xka.jlite.web.basic.runtime.JliteRuntime;
 import io.xka.jlite.web.basic.serializer.JsonAdopter;
+import io.xka.jlite.web.serv.options.CORSOptions;
+import io.xka.jlite.web.serv.options.ServOptions;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.ServletOutputStream;
@@ -31,10 +33,23 @@ public class IControl {
     
     private final JsonAdopter jsonAdopter;
 
+    private final ServOptions servOptions;
+
+
     protected IControl(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
         this.httpServletRequest = httpServletRequest;
         this.httpServletResponse = httpServletResponse;
-        this.jsonAdopter = new JsonAdopter(JliteRuntime.getServOptions().getSerializer());
+        this.servOptions = JliteRuntime.getServOptions();
+
+        this.jsonAdopter = new JsonAdopter(servOptions.getSerializer());
+        CORSOptions corsOptions = servOptions.getCorsOptions();
+        if (corsOptions != null && corsOptions.isEnable()) {
+            httpServletResponse.setHeader("Access-Control-Allow-Origin", corsOptions.getAllowOrigin());
+            httpServletResponse.setHeader("Access-Control-Allow-Methods", corsOptions.getAllowMethods());
+            httpServletResponse.setHeader("Access-Control-Allow-Headers", corsOptions.getAllowHeaders());
+            httpServletResponse.setHeader("Access-Control-Allow-Credentials", corsOptions.getAllowCredentials());
+            httpServletResponse.setHeader("Access-Control-Max-Age", corsOptions.getMaxAge());
+        }
     }
 
     public String getQuery(String name) {
