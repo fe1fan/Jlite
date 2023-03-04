@@ -16,6 +16,15 @@ public class ControlFactory {
 
     final static Logger logger = LoggerFactory.getLogger(ControlFactory.class);
 
+    private static Controls uncaptured = null;
+
+    public static void uncaptured(Consumer<IControl> handler) {
+        Controls controls = new Controls();
+        controls.setControl(handler);
+        controls.setKvs(new HashMap<>());
+        ControlFactory.uncaptured = controls;
+    }
+
     public static void register(String path, HttpMethod method, Consumer<IControl> handler) {
         if (path == null || path.isEmpty()) {
             throw new RuntimeException("Path cannot be null or empty");
@@ -64,7 +73,7 @@ public class ControlFactory {
     }
 
     public static Controls get(String path, HttpMethod method) {
-        if (path.endsWith("/")) {
+        if (path.endsWith("/") && path.length() > 1) {
             path = path.substring(0, path.length() - 1);
         }
         Map<HttpMethod, Consumer<IControl>> methodHandlers = staticHandlers.get(path);
@@ -89,8 +98,7 @@ public class ControlFactory {
                 return controls;
             }
         }
-
-        return null;
+        return uncaptured == null ? null : uncaptured;
     }
 }
 

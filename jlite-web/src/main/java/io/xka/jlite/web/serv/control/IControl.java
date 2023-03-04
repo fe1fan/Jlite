@@ -11,13 +11,13 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
-import okhttp3.MediaType;
 import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -41,9 +41,10 @@ public class IControl {
     protected IControl(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
         this.httpServletRequest = httpServletRequest;
         this.httpServletResponse = httpServletResponse;
-        this.servOptions = JliteRuntime.getServOptions();
 
+        this.servOptions = JliteRuntime.getServOptions();
         this.jsonAdopter = new JsonAdopter(servOptions.getSerializer());
+
         CORSOptions corsOptions = servOptions.getCorsOptions();
         if (corsOptions != null && corsOptions.isEnable()) {
             httpServletResponse.setHeader("Access-Control-Allow-Origin", corsOptions.getAllowOrigin());
@@ -54,6 +55,7 @@ public class IControl {
         }
     }
 
+    //---------------------------------- request ---------------------------------------//
     public String getQuery(String name) {
         return httpServletRequest.getParameter(name);
     }
@@ -102,7 +104,7 @@ public class IControl {
         return first.map(Cookie::getValue).orElse(null);
     }
 
-    public <T> T fromJson(Class<T> clazz) {
+    public String getBody() {
         String body = null;
         try {
             ServletInputStream inputStream = httpServletRequest.getInputStream();
@@ -111,57 +113,57 @@ public class IControl {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return jsonAdopter.deserialize(body, clazz);
+        return body;
+    }
+
+    public <T> T getBodyJson(Class<T> clazz) {
+        return jsonAdopter.deserialize(this.getBody(), clazz);
+    }
+
+    //---------------------------------- response ---------------------------------------//
+
+    //---------------------------------- text ---------------------------------------//
+    public void result(int status, IContentType contentType, Charset charset, Object result) {
+        httpServletResponse.setStatus(status);
+        httpServletResponse.setContentType(contentType.getName());
+        httpServletResponse.setCharacterEncoding(charset.name());
+        try (PrintWriter writer = httpServletResponse.getWriter()) {
+            writer.println(result);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void result(String result) {
-        httpServletResponse.setStatus(HttpStatus.OK_200);
-        httpServletResponse.setContentType("text/plain");
-        httpServletResponse.setCharacterEncoding("UTF-8");
-        try (PrintWriter writer = httpServletResponse.getWriter()) {
-            writer.println(result);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        this.result(HttpStatus.OK_200, IContentType.TEXT_PLAIN, StandardCharsets.UTF_8, result);
     }
 
     public void result(int status, String result) {
-        httpServletResponse.setStatus(status);
-        httpServletResponse.setContentType("text/plain");
-        httpServletResponse.setCharacterEncoding("UTF-8");
-        try (PrintWriter writer = httpServletResponse.getWriter()) {
-            writer.println(result);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        this.result(status, IContentType.TEXT_PLAIN, StandardCharsets.UTF_8, result);
+    }
+
+    public void result(IContentType contentType, String result) {
+        this.result(HttpStatus.OK_200, contentType, StandardCharsets.UTF_8, result);
+    }
+
+    public void result(int status, IContentType contentType, String result) {
+        this.result(status, contentType, StandardCharsets.UTF_8, result);
     }
 
     public void json(Object object) {
-        httpServletResponse.setStatus(HttpStatus.OK_200);
-        httpServletResponse.setContentType("application/json");
-        httpServletResponse.setCharacterEncoding("UTF-8");
-        try (PrintWriter writer = httpServletResponse.getWriter()) {
-            writer.println(jsonAdopter.serialize(object));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        this.result(HttpStatus.OK_200, IContentType.APPLICATION_JSON, StandardCharsets.UTF_8, jsonAdopter.serialize(object));
     }
 
     public void json(int status, Object object) {
-        httpServletResponse.setStatus(status);
-        httpServletResponse.setContentType("application/json");
-        httpServletResponse.setCharacterEncoding("UTF-8");
-        try (PrintWriter writer = httpServletResponse.getWriter()) {
-            writer.println(jsonAdopter.serialize(object));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        this.result(status, IContentType.APPLICATION_JSON, StandardCharsets.UTF_8, jsonAdopter.serialize(object));
     }
 
-    public void file(String contentType, byte[] file) {
-        httpServletResponse.setStatus(HttpStatus.OK_200);
-        httpServletResponse.setContentType(contentType);
-        httpServletResponse.setCharacterEncoding("UTF-8");
+
+    //------------------------------- file ------------------------------------------//
+    public void file(int status, IContentType contentType, Charset charset, byte[] file) {
+        httpServletResponse.setStatus(status);
+        httpServletResponse.setContentType(contentType.getName());
+        httpServletResponse.setCharacterEncoding(charset.name());
         try (ServletOutputStream outputStream = httpServletResponse.getOutputStream()) {
             outputStream.write(file);
         } catch (IOException e) {
@@ -169,17 +171,15 @@ public class IControl {
         }
     }
 
-    public void file(int status, String contentType, byte[] file) {
-        httpServletResponse.setStatus(status);
-        httpServletResponse.setContentType(contentType);
-        httpServletResponse.setCharacterEncoding("UTF-8");
-        try (ServletOutputStream outputStream = httpServletResponse.getOutputStream()) {
-            outputStream.write(file);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    public void file(IContentType contentType, byte[] file) {
+        this.file(HttpStatus.OK_200, contentType, StandardCharsets.UTF_8, file);
     }
 
+    public void file(int status, IContentType contentType, byte[] file) {
+        this.file(status, contentType, StandardCharsets.UTF_8, file);
+    }
+
+    //------------------------------- action ------------------------------------------//
     public void redirect(String url) {
         try {
             httpServletResponse.sendRedirect(url);
@@ -219,18 +219,19 @@ public class IControl {
         }
     }
 
+    //test version
     public ArrayBlockingQueue<SSEEvent> sse(int capacity) {
         ArrayBlockingQueue<SSEEvent> queue = new ArrayBlockingQueue<>(capacity);
         new Thread(() -> {
-            httpServletResponse.setContentType("text/event-stream");
+            httpServletResponse.setContentType(IContentType.TEXT_EVENT_STREAM.getName());
             httpServletResponse.setCharacterEncoding(StandardCharsets.UTF_8.name());
-            try(ServletOutputStream outputStream = httpServletResponse.getOutputStream()) {
+            try (ServletOutputStream outputStream = httpServletResponse.getOutputStream()) {
                 while (!Thread.currentThread().isInterrupted()) {
                     SSEEvent sseEvent = queue.take();
                     outputStream.print(sseEvent.getData());
                     outputStream.flush();
                 }
-            } catch (IOException  | InterruptedException e) {
+            } catch (IOException | InterruptedException e) {
                 Thread.currentThread().interrupt();
                 logger.error("SSE error", e);
                 throw new RuntimeException(e);

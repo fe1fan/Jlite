@@ -8,7 +8,7 @@ public class ServOptions {
 
     private String host = "localhost";
 
-    private int port = 9090;
+    private int port = 8080;
 
     private SSLOptions sslOptions = new SSLOptions();
 

@@ -51,10 +51,12 @@ public class JliteServApp {
         this.server.setConnectors(connectors.toArray(new ServerConnector[0]));
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.setContextPath("/");
-        ServletHolder servletHolder = context.addServlet(HttpServletControl.class, "/*");
+        ServletHolder servletHolder = context.addServlet(BasicServletControl.class, "/*");
         servletHolder.getRegistration().setMultipartConfig(
                 new MultipartConfigElement(System.getProperty("java.io.tmpdir"))
         );
+        //not found
+
         this.server.setHandler(context);
     }
 
@@ -170,5 +172,9 @@ public class JliteServApp {
 
     public void use(String path, Function<IHandler, Boolean> handler) {
         this.addHandler(path, handler);
+    }
+
+    public void uncaptured(Consumer<IControl> consumer) {
+        ControlFactory.uncaptured(consumer);
     }
 }
