@@ -18,7 +18,6 @@ public class SSLOptions {
 
     public static SSLOptions copy(SSLOptions sslOptions) {
         SSLOptions copy = SSLOptions.create()
-
                 .sslPort(sslOptions.sslPort)
                 .keystorePath(sslOptions.keystorePath)
                 .keystorePassword(sslOptions.keystorePassword)

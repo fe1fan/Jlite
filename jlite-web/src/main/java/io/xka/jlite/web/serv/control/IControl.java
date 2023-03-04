@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.stream.Collectors;
 
 public class IControl {
@@ -34,6 +35,8 @@ public class IControl {
     private final JsonAdopter jsonAdopter;
 
     private final ServOptions servOptions;
+
+    private PrintWriter sseWriter;
 
 
     protected IControl(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
@@ -183,18 +186,27 @@ public class IControl {
         }
     }
 
-    public void sse(String event, String data) {
+    public void sse(ArrayBlockingQueue<Map<String, String>> seeQueue) {
         httpServletResponse.setStatus(HttpStatus.OK_200);
         httpServletResponse.setContentType("text/event-stream");
         httpServletResponse.setCharacterEncoding("UTF-8");
-        try (PrintWriter writer = httpServletResponse.getWriter()) {
-            writer.println("event: " + event);
-            writer.println("data: " + data);
-            writer.println();
-            writer.flush();
+        try {
+            sseWriter = httpServletResponse.getWriter();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        new Thread(() -> {
+            while (true) {
+                try {
+                    Map<String, String> event = seeQueue.take();
+                    sseWriter.println("event: " + event.get("event"));
+                    sseWriter.println("data: " + event.get("data"));
+                    sseWriter.println();
+                    sseWriter.flush();
+                } catch (InterruptedException e) {
+                    logger.error(e.getLocalizedMessage());
+                }
+            }
+        }).start();
     }
-
 }

@@ -3,6 +3,7 @@ package io.xka.jlite.web.serv;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
+import io.xka.jlite.web.serv.options.CORSOptions;
 import io.xka.jlite.web.serv.options.ServOptions;
 import io.xka.jlite.web.serv.options.SSLOptions;
 import io.xka.jlite.web.serv.options.ThreadOptions;
@@ -23,6 +24,10 @@ public class JliteServ {
 
     public static ThreadOptions threadOptions() {
         return new ThreadOptions();
+    }
+
+    public static CORSOptions corsOptions() {
+        return new CORSOptions();
     }
 
     public static ServOptions yaml(String path) {

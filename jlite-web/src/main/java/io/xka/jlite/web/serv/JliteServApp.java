@@ -81,6 +81,7 @@ public class JliteServApp {
         logger.info("use jlite version: " + VERSION);
         logger.info("use jlite json serializer adopter: {}", options.getSerializer());
         logger.info("enable ssl: {}", options.getSslOptions().isEnableSSL());
+        logger.info("enable cors: {}", options.getCorsOptions().isEnable());
     }
 
 
@@ -112,7 +113,10 @@ public class JliteServApp {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        logger.info("\n\nJlite Server Started Successfully On \nhttp://{}:{}\nhttps://{}:{}\n", options.getHost(), options.getPort(), options.getHost(), options.getSslOptions().getSslPort());
+        logger.info("\n\nJlite Server Started Successfully On: \nhttp://{}:{}\n", options.getHost(), options.getPort());
+        if (this.options.getSslOptions().isEnableSSL()) {
+            logger.info("https://{}:{}\n", options.getHost(), options.getSslOptions().getSslPort());
+        }
         return this;
     }
 

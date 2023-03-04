@@ -14,7 +14,7 @@ public class ServOptions {
 
     private ThreadOptions threadOptions = new ThreadOptions();
 
-    private CORSOptions corsOptions;
+    private CORSOptions corsOptions = new CORSOptions();
 
     private JsonAdopter.Engine serializer = JsonAdopter.Engine.JACKSON;
 
