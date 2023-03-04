@@ -11,12 +11,14 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
+import okhttp3.MediaType;
 import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,13 +33,10 @@ public class IControl {
     private final HttpServletRequest httpServletRequest;
 
     private final HttpServletResponse httpServletResponse;
-    
+
     private final JsonAdopter jsonAdopter;
 
     private final ServOptions servOptions;
-
-    private PrintWriter sseWriter;
-
 
     protected IControl(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
         this.httpServletRequest = httpServletRequest;
@@ -96,6 +95,9 @@ public class IControl {
 
     public String getCookie(String name) {
         Cookie[] cookies = httpServletRequest.getCookies();
+        if (cookies == null) {
+            return null;
+        }
         Optional<Cookie> first = Arrays.stream(cookies).filter(cookie -> cookie.getName().equals(name)).findFirst();
         return first.map(Cookie::getValue).orElse(null);
     }
@@ -160,7 +162,7 @@ public class IControl {
         httpServletResponse.setStatus(HttpStatus.OK_200);
         httpServletResponse.setContentType(contentType);
         httpServletResponse.setCharacterEncoding("UTF-8");
-        try(ServletOutputStream outputStream = httpServletResponse.getOutputStream()){
+        try (ServletOutputStream outputStream = httpServletResponse.getOutputStream()) {
             outputStream.write(file);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -171,7 +173,7 @@ public class IControl {
         httpServletResponse.setStatus(status);
         httpServletResponse.setContentType(contentType);
         httpServletResponse.setCharacterEncoding("UTF-8");
-        try(ServletOutputStream outputStream = httpServletResponse.getOutputStream()){
+        try (ServletOutputStream outputStream = httpServletResponse.getOutputStream()) {
             outputStream.write(file);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -186,27 +188,54 @@ public class IControl {
         }
     }
 
-    public void sse(ArrayBlockingQueue<Map<String, String>> seeQueue) {
-        httpServletResponse.setStatus(HttpStatus.OK_200);
-        httpServletResponse.setContentType("text/event-stream");
-        httpServletResponse.setCharacterEncoding("UTF-8");
-        try {
-            sseWriter = httpServletResponse.getWriter();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    public void setCookie(String key, String val) {
+        Cookie cookie = new Cookie(key, val);
+        httpServletResponse.addCookie(cookie);
+    }
+
+    public static class SSEEvent {
+        private String event;
+        private String data;
+
+        public SSEEvent(String event, String data) {
+            this.event = event;
+            this.data = data;
         }
+
+        public String getEvent() {
+            return event;
+        }
+
+        public void setEvent(String event) {
+            this.event = event;
+        }
+
+        public String getData() {
+            return data;
+        }
+
+        public void setData(String data) {
+            this.data = data;
+        }
+    }
+
+    public ArrayBlockingQueue<SSEEvent> sse(int capacity) {
+        ArrayBlockingQueue<SSEEvent> queue = new ArrayBlockingQueue<>(capacity);
         new Thread(() -> {
-            while (true) {
-                try {
-                    Map<String, String> event = seeQueue.take();
-                    sseWriter.println("event: " + event.get("event"));
-                    sseWriter.println("data: " + event.get("data"));
-                    sseWriter.println();
-                    sseWriter.flush();
-                } catch (InterruptedException e) {
-                    logger.error(e.getLocalizedMessage());
+            httpServletResponse.setContentType("text/event-stream");
+            httpServletResponse.setCharacterEncoding(StandardCharsets.UTF_8.name());
+            try(ServletOutputStream outputStream = httpServletResponse.getOutputStream()) {
+                while (!Thread.currentThread().isInterrupted()) {
+                    SSEEvent sseEvent = queue.take();
+                    outputStream.print(sseEvent.getData());
+                    outputStream.flush();
                 }
+            } catch (IOException  | InterruptedException e) {
+                Thread.currentThread().interrupt();
+                logger.error("SSE error", e);
+                throw new RuntimeException(e);
             }
         }).start();
+        return queue;
     }
 }
