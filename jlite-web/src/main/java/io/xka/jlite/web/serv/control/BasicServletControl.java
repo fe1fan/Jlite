@@ -1,4 +1,4 @@
-package io.xka.jlite.web.control;
+package io.xka.jlite.web.serv.control;
 
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,9 +9,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.function.Function;
 
-public class HttpServletControl extends HttpServlet {
+public class BasicServletControl extends HttpServlet {
 
-    Logger logger = LoggerFactory.getLogger(HttpServletControl.class);
+    Logger logger = LoggerFactory.getLogger(BasicServletControl.class);
 
     private void handle(HttpServletRequest req, HttpServletResponse resp) {
         String path = req.getRequestURI().substring(req.getContextPath().length());

@@ -11,7 +11,10 @@ repositories {
 }
 
 dependencies {
-
+    //okhttp3
+    implementation 'com.squareup.okhttp3:okhttp:4.9.2'
+    //okhttp3-eventsource
+    implementation "com.squareup.okhttp3:okhttp-sse:4.9.3"
     //jetty-server
     implementation('org.eclipse.jetty:jetty-server:11.0.13') exclude(module: 'slf4j-api')
     //jetty-servlet

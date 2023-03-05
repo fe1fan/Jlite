@@ -1,4 +1,4 @@
-package io.xka.jlite.web.control;
+package io.xka.jlite.web.serv.control;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

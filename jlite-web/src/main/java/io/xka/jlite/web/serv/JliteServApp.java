@@ -1,10 +1,11 @@
-package io.xka.jlite.web;
+package io.xka.jlite.web.serv;
 
-import io.xka.jlite.web.connector.HttpConnector;
-import io.xka.jlite.web.connector.HttpsConnector;
-import io.xka.jlite.web.control.*;
-import io.xka.jlite.web.options.SSLOptions;
-import io.xka.jlite.web.runtime.JliteRuntime;
+import io.xka.jlite.web.serv.connector.HttpConnector;
+import io.xka.jlite.web.serv.connector.HttpsConnector;
+import io.xka.jlite.web.serv.control.*;
+import io.xka.jlite.web.serv.options.SSLOptions;
+import io.xka.jlite.web.basic.runtime.JliteRuntime;
+import io.xka.jlite.web.serv.options.ServOptions;
 import jakarta.servlet.MultipartConfigElement;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.server.Server;
@@ -21,11 +22,11 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public class JliteApp {
+public class JliteServApp {
 
     public static final String VERSION = "alpha-0.0.1";
 
-    Logger logger = LoggerFactory.getLogger(JliteApp.class);
+    Logger logger = LoggerFactory.getLogger(JliteServApp.class);
 
     enum Status {
         STARING, RUNNING, STOPPING, STOPPED
@@ -35,9 +36,10 @@ public class JliteApp {
 
     private final Server server;
 
+    private final ServOptions options;
+
 
     private void init() {
-        var options = JliteRuntime.getOptions();
         SSLOptions sslOptions = options.getSslOptions();
         List<ServerConnector> connectors = new ArrayList<>(2);
         if (sslOptions.isEnableSSL()) {
@@ -49,16 +51,18 @@ public class JliteApp {
         this.server.setConnectors(connectors.toArray(new ServerConnector[0]));
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         context.setContextPath("/");
-        ServletHolder servletHolder = context.addServlet(HttpServletControl.class, "/*");
+        ServletHolder servletHolder = context.addServlet(BasicServletControl.class, "/*");
         servletHolder.getRegistration().setMultipartConfig(
                 new MultipartConfigElement(System.getProperty("java.io.tmpdir"))
         );
+        //not found
+
         this.server.setHandler(context);
     }
 
 
-    public JliteApp() {
-        var options = JliteRuntime.getOptions();
+    public JliteServApp() {
+        this.options = JliteRuntime.getServOptions();
         QueuedThreadPool threadPool = new QueuedThreadPool(
                 options.getThreadOptions().getMaxThreads(),
                 options.getThreadOptions().getMinThreads(),
@@ -70,7 +74,6 @@ public class JliteApp {
     }
 
     private void log() {
-        var options = JliteRuntime.getOptions();
         logger.info("\n     ____.__  .__  __          \n" +
                 "    |    |  | |__|/  |_  ____  \n" +
                 "    |    |  | |  \\   __\\/ __ \\ \n" +
@@ -80,11 +83,11 @@ public class JliteApp {
         logger.info("use jlite version: " + VERSION);
         logger.info("use jlite json serializer adopter: {}", options.getSerializer());
         logger.info("enable ssl: {}", options.getSslOptions().isEnableSSL());
+        logger.info("enable cors: {}", options.getCorsOptions().isEnable());
     }
 
 
-    public synchronized JliteApp run() {
-        var options = JliteRuntime.getOptions();
+    public synchronized JliteServApp run() {
         if (this.STATUS != Status.STOPPED) {
             throw new RuntimeException("server is running");
         }
@@ -112,11 +115,14 @@ public class JliteApp {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        logger.info("\n\nJlite Server Started Successfully On \nhttp://{}:{}\nhttps://{}:{}\n", options.getHost(), options.getPort(), options.getHost(), options.getSslOptions().getSslPort());
+        logger.info("\n\nJlite Server Started Successfully On: \nhttp://{}:{}\n", options.getHost(), options.getPort());
+        if (this.options.getSslOptions().isEnableSSL()) {
+            logger.info("https://{}:{}\n", options.getHost(), options.getSslOptions().getSslPort());
+        }
         return this;
     }
 
-    public JliteApp stop() {
+    public JliteServApp stop() {
         try {
             this.server.stop();
         } catch (Exception e) {
@@ -166,5 +172,9 @@ public class JliteApp {
 
     public void use(String path, Function<IHandler, Boolean> handler) {
         this.addHandler(path, handler);
+    }
+
+    public void uncaptured(Consumer<IControl> consumer) {
+        ControlFactory.uncaptured(consumer);
     }
 }

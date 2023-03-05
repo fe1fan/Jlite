@@ -1,4 +1,4 @@
-package io.xka.jlite.web.control;
+package io.xka.jlite.web.serv.control;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,14 +10,14 @@ public class HandlerFactory {
 
     public static void register(String path, Function<IHandler, Boolean> handler) {
         if (path == null || path.isEmpty()) {
-            throw new RuntimeException("Path cannot be null or empty");
+            throw new RuntimeException("path cannot be null or empty");
         }
         if (!path.startsWith("/")) {
             path = "/" + path;
         }
         //check if the path is already registered
         if (handlers.containsKey(path)) {
-            throw new RuntimeException("Path already registered: " + path);
+            throw new RuntimeException("path already registered: " + path);
         }
         handlers.put(path, handler);
     }

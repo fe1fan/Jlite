@@ -1,4 +1,3 @@
 rootProject.name = 'jlite'
 include 'example'
 include 'jlite-web'
-
