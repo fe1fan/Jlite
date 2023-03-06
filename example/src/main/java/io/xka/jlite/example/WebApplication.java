@@ -4,8 +4,10 @@ import io.xka.jlite.web.basic.serializer.JsonAdopter;
 import io.xka.jlite.web.serv.JliteServ;
 import io.xka.jlite.web.serv.JliteServApp;
 import io.xka.jlite.web.serv.control.IContentType;
+import io.xka.jlite.web.serv.control.IControl;
 
 import java.util.HashMap;
+import java.util.concurrent.ArrayBlockingQueue;
 
 public class WebApplication {
 
@@ -25,6 +27,17 @@ public class WebApplication {
                     put("age", 1);
                 }
             });
+        });
+        app.get("/sse", ctl -> {
+            ArrayBlockingQueue<IControl.SSEEvent> sse = ctl.sse(10);
+            for (int i = 0; i < 10; i++) {
+                sse.add(new IControl.SSEEvent("message", "hello world"));
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
         });
     }
 }

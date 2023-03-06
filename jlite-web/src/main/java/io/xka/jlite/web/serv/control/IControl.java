@@ -228,7 +228,8 @@ public class IControl {
             try (ServletOutputStream outputStream = httpServletResponse.getOutputStream()) {
                 while (!Thread.currentThread().isInterrupted()) {
                     SSEEvent sseEvent = queue.take();
-                    outputStream.print(sseEvent.getData());
+                    outputStream.println(sseEvent.getData());
+                    outputStream.println();
                     outputStream.flush();
                 }
             } catch (IOException | InterruptedException e) {

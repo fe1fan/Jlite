@@ -25,7 +25,7 @@ public class HttpComponents {
 
     public HttpComponents(CliOptions options) {
         this.options = options;
-        this.jsonAdopter = new JsonAdopter(this.options.serializer());
+        this.jsonAdopter = new JsonAdopter(this.options.getSerializer());
     }
 
     private static OkHttpClient getInstance() {

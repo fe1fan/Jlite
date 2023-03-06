@@ -33,7 +33,7 @@ public class CliOptions {
     /**
      * ---------------- getters ----------------
      */
-    public JsonAdopter.Engine serializer() {
+    public JsonAdopter.Engine getSerializer() {
         return serializer;
     }
 }
