@@ -62,10 +62,12 @@ public class JliteServApp {
     private void init() {
         SSLOptions sslOptions = options.getSslOptions();
         List<ServerConnector> connectors = new ArrayList<>(1);
+        //TODO https support
 //        if (sslOptions.isEnableSSL()) {
 //            HttpsConnector httpsConnector = new HttpsConnector();
 //            connectors.add(httpsConnector.getConnector(server, options));
 //        }
+        //TODO htt2 and http3 support
         HttpConnector httpConnector = new HttpConnector();
         connectors.add(httpConnector.getConnector(server, options));
         this.server.setConnectors(connectors.toArray(new ServerConnector[0]));
