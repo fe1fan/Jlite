@@ -61,11 +61,11 @@ public class JliteServApp {
 
     private void init() {
         SSLOptions sslOptions = options.getSslOptions();
-        List<ServerConnector> connectors = new ArrayList<>(2);
-        if (sslOptions.isEnableSSL()) {
-            HttpsConnector httpsConnector = new HttpsConnector();
-            connectors.add(httpsConnector.getConnector(server, options));
-        }
+        List<ServerConnector> connectors = new ArrayList<>(1);
+//        if (sslOptions.isEnableSSL()) {
+//            HttpsConnector httpsConnector = new HttpsConnector();
+//            connectors.add(httpsConnector.getConnector(server, options));
+//        }
         HttpConnector httpConnector = new HttpConnector();
         connectors.add(httpConnector.getConnector(server, options));
         this.server.setConnectors(connectors.toArray(new ServerConnector[0]));
@@ -99,6 +99,17 @@ public class JliteServApp {
         this.log();
         try {
             this.server.start();
+            this.server.setRequestLog((request, response) -> {
+                logger.info("{} {} {} {} {} {} {}",
+                        request.getRemoteAddr(),
+                        request.getRemoteUser(),
+                        request.getMethod(),
+                        request.getRequestURI(),
+                        response.getStatus(),
+                        response.getCommittedMetaData().getFields().get("Content-Length"),
+                        response.getCommittedMetaData().getFields().get("Content-Type")
+                );
+            });
             new Thread(() -> {
                 try {
                     this.server.join();

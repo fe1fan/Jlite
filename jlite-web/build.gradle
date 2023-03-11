@@ -17,6 +17,8 @@ dependencies {
     implementation "com.squareup.okhttp3:okhttp-sse:4.9.3"
     //jetty-server
     implementation('org.eclipse.jetty:jetty-server:11.0.13') exclude(module: 'slf4j-api')
+    //jetty-server-http2
+    implementation 'org.eclipse.jetty.http2:http2-server:11.0.13' exclude(module: 'slf4j-api')
     //jetty-servlet
     implementation 'org.eclipse.jetty:jetty-servlet:11.0.13' exclude(module: 'slf4j-api')
     //log4j2 api
