@@ -20,15 +20,20 @@ import java.util.stream.Collectors;
 
 public class HttpV2 {
 
-    protected volatile HttpClient httpClient;
-
     private final CliOptions cliOptions;
-
     private final JsonAdopter jsonAdopter;
+    protected volatile HttpClient httpClient;
 
     public HttpV2(CliOptions cliOptions) {
         this.cliOptions = cliOptions;
         this.jsonAdopter = new JsonAdopter(cliOptions.getSerializer());
+    }
+
+    public static void main(String[] args) {
+        HttpV2 httpV2 = new HttpV2(
+                new CliOptions().serializer(JsonAdopter.Engine.JACKSON)
+        );
+        httpV2.sse("http://127.0.0.1:8080/sse");
     }
 
     private synchronized HttpClient init() {
@@ -55,7 +60,11 @@ public class HttpV2 {
             throw new IllegalArgumentException("url is null or empty");
         }
         if (params != null && !params.isEmpty()) {
-            url += "?" + params.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).collect(Collectors.joining("&"));
+            url += "?" + params
+                    .entrySet()
+                    .stream()
+                    .map(e -> e.getKey() + "=" + e.getValue())
+                    .collect(Collectors.joining("&"));
         }
         URI uri;
         try {
@@ -67,7 +76,11 @@ public class HttpV2 {
                 .uri(uri)
                 .GET();
         if (headers != null && !headers.isEmpty()) {
-            getBuilder.headers(headers.entrySet().stream().map(e -> e.getKey() + ":" + e.getValue()).toArray(String[]::new));
+            getBuilder.headers(headers
+                    .entrySet()
+                    .stream()
+                    .map(e -> e.getKey() + ":" + e.getValue())
+                    .toArray(String[]::new));
         }
         HttpRequest request = getBuilder.build();
         HttpClient httpClient = this.getHttpClient();
@@ -103,14 +116,6 @@ public class HttpV2 {
         return jsonAdopter.deserialize(response, clazz);
     }
 
-    public <T> T get(String url, Map<String, String> headers, Map<String, String> params, Class<T> clazz) {
-        String response = get(url, headers, params);
-        if (response == null || response.isEmpty()) {
-            return null;
-        }
-        return jsonAdopter.deserialize(response, clazz);
-    }
-
     // TODO --------------------------------------- post ----------------------------------------------
     // TODO --------------------------------------- put ----------------------------------------------
     // TODO --------------------------------------- delete ----------------------------------------------
@@ -118,6 +123,14 @@ public class HttpV2 {
     // TODO --------------------------------------- head ----------------------------------------------
     // TODO --------------------------------------- options ----------------------------------------------
     // TODO --------------------------------------- trace ----------------------------------------------
+
+    public <T> T get(String url, Map<String, String> headers, Map<String, String> params, Class<T> clazz) {
+        String response = get(url, headers, params);
+        if (response == null || response.isEmpty()) {
+            return null;
+        }
+        return jsonAdopter.deserialize(response, clazz);
+    }
 
     public void sse(String url) {
         HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_2).build();
@@ -171,13 +184,5 @@ public class HttpV2 {
                 .thenApply(HttpResponse::body) // 获取响应体结果（这里是一个 CompletableFuture<String> 对象）
                 .thenAccept(System.out::println) // 打印最终结果（如果有）
                 .join(); // 等待异步操作完成
-    }
-
-
-    public static void main(String[] args) {
-        HttpV2 httpV2 = new HttpV2(
-                new CliOptions().serializer(JsonAdopter.Engine.JACKSON)
-        );
-        httpV2.sse("http://127.0.0.1:8080/sse");
     }
 }

@@ -20,6 +20,16 @@ public class VO {
     @Builder.Default
     private boolean stream = true;
 
+    //add message
+    public void addMessage(String role, String content) {
+        MessagesDTO dto = new MessagesDTO();
+        dto.setRole(role);
+        dto.setContent(content);
+        if (this.messages == null)
+            this.messages = new java.util.ArrayList<>();
+        this.messages.add(dto);
+    }
+
     @lombok.Data
     @Builder
     @NoArgsConstructor
@@ -29,15 +39,5 @@ public class VO {
         private String role = "user";
         @com.fasterxml.jackson.annotation.JsonProperty("content")
         private String content;
-    }
-
-    //add message
-    public void addMessage(String role, String content) {
-        MessagesDTO dto = new MessagesDTO();
-        dto.setRole(role);
-        dto.setContent(content);
-        if (this.messages == null)
-            this.messages = new java.util.ArrayList<>();
-        this.messages.add(dto);
     }
 }

@@ -12,14 +12,14 @@ public class CliOptions {
         return new CliOptions();
     }
 
-    public JliteCliApp quick() {
-        JliteRuntime.setCliOptions(this);
-        return new JliteCliApp();
-    }
-
     public static CliOptions copy(CliOptions cliOptions) {
         return CliOptions.create()
                 .serializer(cliOptions.serializer);
+    }
+
+    public JliteCliApp quick() {
+        JliteRuntime.setCliOptions(this);
+        return new JliteCliApp();
     }
 
     /**

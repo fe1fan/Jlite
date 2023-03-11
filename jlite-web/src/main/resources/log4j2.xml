@@ -2,20 +2,21 @@
 <configuration status="WARN" monitorInterval="30" isThreadContextMapInheritable="true">
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss.SSS}]-[%highlight{%-5p}]-[%green{%t}]-%magenta{%l}: %msg%n"/>
+            <PatternLayout
+                pattern="[%d{yyyy-MM-dd HH:mm:ss.SSS}]-[%highlight{%-5p}]-[%green{%t}]-%magenta{%l}: %msg%n"/>
         </Console>
     </Appenders>
     <Loggers>
         <Root level="info">
             <AppenderRef ref="Console"/>
         </Root>
-<!--        <logger name="org.eclipse.jetty.server" level="INFO"/>-->
+        <!--        <logger name="org.eclipse.jetty.server" level="INFO"/>-->
         <logger name="org.eclipse.jetty" level="ERROR"/>
         <logger name="org.eclipse.jetty" level="INFO"/>
         <logger name="io.xka.jlite" level="INFO"/>
         <logger name="io.xka.jlite" level="DEBUG"/>
         <logger name="io.xka.jlite" level="ERROR"/>
         <logger name="io.xka.jlite" level="TRACE"/>
-<!--        <logger name="org.eclipse.jetty.server" level="DEBUG"/>-->
+        <!--        <logger name="org.eclipse.jetty.server" level="DEBUG"/>-->
     </Loggers>
 </configuration>

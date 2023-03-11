@@ -2,7 +2,12 @@ package io.xka.jlite.web.serv.connector;
 
 import io.xka.jlite.web.serv.options.ServOptions;
 import org.eclipse.jetty.http.HttpVersion;
-import org.eclipse.jetty.server.*;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.SecureRequestCustomizer;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 public class HttpsConnector {
@@ -20,7 +25,10 @@ public class HttpsConnector {
         sslContextFactory.setKeyStorePassword(servOptions.getSslOptions().getKeystorePassword());
         sslContextFactory.setKeyManagerPassword(servOptions.getSslOptions().getKeyManagerPassword());
 
-        ServerConnector connector = new ServerConnector(server, new SslConnectionFactory(sslContextFactory, HttpVersion.HTTP_1_1.asString()), new HttpConnectionFactory(configuration));
+        ServerConnector connector = new ServerConnector(
+                server,
+                new SslConnectionFactory(sslContextFactory, HttpVersion.HTTP_1_1.asString()),
+                new HttpConnectionFactory(configuration));
         connector.setPort(servOptions.getSslOptions().getSslPort());
         connector.setHost(servOptions.getHost());
         connector.setIdleTimeout(10_000);

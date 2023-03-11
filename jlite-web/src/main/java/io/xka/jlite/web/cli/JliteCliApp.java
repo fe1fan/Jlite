@@ -6,18 +6,16 @@ import io.xka.jlite.web.cli.options.CliOptions;
 
 public class JliteCliApp {
 
-    private HttpComponents httpComponents;
-
     private final CliOptions options;
-
-    private void init() {
-        httpComponents = new HttpComponents(options);
-    }
-
+    private HttpComponents httpComponents;
 
     public JliteCliApp() {
         this.options = JliteRuntime.getCliOptions();
         this.init();
+    }
+
+    private void init() {
+        httpComponents = new HttpComponents(options);
     }
 
     public HttpComponents http() {

@@ -22,7 +22,9 @@ public class BasicServletControl extends HttpServlet {
                 return;
             }
         }
-        Controls controls = ControlFactory.get(req.getRequestURI().substring(req.getContextPath().length()), HttpMethod.valueOf(req.getMethod()));
+        Controls controls = ControlFactory.get(
+                req.getRequestURI().substring(req.getContextPath().length()),
+                HttpMethod.valueOf(req.getMethod()));
         if (controls == null || controls.getControl() == null) {
             resp.setStatus(404);
             return;
@@ -30,9 +32,7 @@ public class BasicServletControl extends HttpServlet {
         if (controls.getKvs() != null && !controls.getKvs().isEmpty()) {
             controls.getKvs().forEach(req::setAttribute);
         }
-        IControl iControl = new IControl(req, resp);
-        controls.getControl().accept(iControl);
-        iControl = null;
+        controls.getControl().accept(new IControl(req, resp));
     }
 
     @Override

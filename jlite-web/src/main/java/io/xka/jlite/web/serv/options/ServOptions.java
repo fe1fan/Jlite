@@ -1,8 +1,8 @@
 package io.xka.jlite.web.serv.options;
 
-import io.xka.jlite.web.serv.JliteServApp;
 import io.xka.jlite.web.basic.runtime.JliteRuntime;
 import io.xka.jlite.web.basic.serializer.JsonAdopter;
+import io.xka.jlite.web.serv.JliteServApp;
 
 public class ServOptions {
 

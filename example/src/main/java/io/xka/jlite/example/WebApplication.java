@@ -1,6 +1,5 @@
 package io.xka.jlite.example;
 
-import io.xka.jlite.web.basic.serializer.JsonAdopter;
 import io.xka.jlite.web.serv.JliteServ;
 import io.xka.jlite.web.serv.JliteServApp;
 import io.xka.jlite.web.serv.control.IContentType;

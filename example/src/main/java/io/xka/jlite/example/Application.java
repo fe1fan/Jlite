@@ -26,49 +26,6 @@ public class Application {
 
     private static final Map<String, VO> cache = new HashMap<>();
 
-    static class Listener extends EventSourceListener {
-
-        private final ArrayBlockingQueue<IControl.SSEEvent> queue;
-
-        public Listener(ArrayBlockingQueue<IControl.SSEEvent> queue) {
-            this.queue = queue;
-        }
-        @Override
-        public void onOpen(@NotNull EventSource eventSource, @NotNull Response response) {
-            super.onOpen(eventSource, response);
-        }
-
-        @Override
-        public void onEvent(@NotNull EventSource eventSource, @Nullable String id, @Nullable String type, @NotNull String data) {
-            if (data.equals("[DONE]")) {
-                onClosed(eventSource);
-                return;
-            }
-            BO bo = JSON.parseObject(data, BO.class);
-            BO.ChoicesDTO choicesDTO = bo.getChoices().stream().filter(choice -> choice.getDelta().getContent() != null).findFirst().orElse(null);
-            if (choicesDTO == null) {
-                return;
-            }
-            String context = JSONPath.eval(JSON.parseObject(data), "$.choices[0].delta.content").toString();
-            IControl.SSEEvent sseEvent = new IControl.SSEEvent("message", context);
-            try {
-                queue.put(sseEvent);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        @Override
-        public void onClosed(@NotNull EventSource eventSource) {
-            try {
-                queue.put(new IControl.SSEEvent("close", "close"));
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-            super.onClosed(eventSource);
-        }
-    }
-
     public static void main(String[] args) {
         //create from options
         JliteServApp app = JliteServ.options()
@@ -122,5 +79,58 @@ public class Application {
             orDefault.addMessage("assistant", stringBuilder.toString());
             cache.put(session, orDefault);
         });
+    }
+
+    static class Listener extends EventSourceListener {
+
+        private final ArrayBlockingQueue<IControl.SSEEvent> queue;
+
+        public Listener(ArrayBlockingQueue<IControl.SSEEvent> queue) {
+            this.queue = queue;
+        }
+
+        @Override
+        public void onOpen(@NotNull EventSource eventSource, @NotNull Response response) {
+            super.onOpen(eventSource, response);
+        }
+
+        @Override
+        public void onEvent(
+                @NotNull EventSource eventSource,
+                @Nullable String id,
+                @Nullable String type,
+                @NotNull String data) {
+            if (data.equals("[DONE]")) {
+                onClosed(eventSource);
+                return;
+            }
+            BO bo = JSON.parseObject(data, BO.class);
+            BO.ChoicesDTO choicesDTO = bo
+                    .getChoices()
+                    .stream()
+                    .filter(choice -> choice.getDelta().getContent() != null)
+                    .findFirst()
+                    .orElse(null);
+            if (choicesDTO == null) {
+                return;
+            }
+            String context = JSONPath.eval(JSON.parseObject(data), "$.choices[0].delta.content").toString();
+            IControl.SSEEvent sseEvent = new IControl.SSEEvent("message", context);
+            try {
+                queue.put(sseEvent);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public void onClosed(@NotNull EventSource eventSource) {
+            try {
+                queue.put(new IControl.SSEEvent("close", "close"));
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            super.onClosed(eventSource);
+        }
     }
 }

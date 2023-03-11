@@ -1,15 +1,12 @@
 package io.xka.jlite.web.serv;
 
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class WorkerExecutors {
 
@@ -28,13 +25,6 @@ public class WorkerExecutors {
                             TimeUnit.SECONDS,
                             new ArrayBlockingQueue<>(1000)
                     );
-                    threadPoolExecutor.setThreadFactory(new ThreadFactory() {
-                        private final AtomicInteger threadNumber = new AtomicInteger(1);
-                        public Thread newThread(@NotNull Runnable runnable) {
-                            String namePrefix = "JliteWorkThread-";
-                            return new Thread(runnable, namePrefix + threadNumber.getAndIncrement());
-                        }
-                    });
                 }
             }
         }

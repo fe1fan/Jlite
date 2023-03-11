@@ -1,7 +1,7 @@
 package io.xka.jlite.web.serv.options;
 
 public class CORSOptions {
-    //create
+
     private boolean enable = false;
 
     private String allowOrigin = "*";

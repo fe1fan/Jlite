@@ -2,7 +2,14 @@ package io.xka.jlite.web.cli.components;
 
 import io.xka.jlite.web.basic.serializer.JsonAdopter;
 import io.xka.jlite.web.cli.options.CliOptions;
-import okhttp3.*;
+import okhttp3.Call;
+import okhttp3.ConnectionPool;
+import okhttp3.Headers;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import okhttp3.sse.EventSource;
 import okhttp3.sse.EventSourceListener;
 import okhttp3.sse.EventSources;
@@ -144,12 +151,19 @@ public class HttpComponents {
             }
 
             @Override
-            public void onEvent(@NotNull EventSource eventSource, @Nullable String id, @Nullable String type, @NotNull String data) {
+            public void onEvent(
+                    @NotNull EventSource eventSource,
+                    @Nullable String id,
+                    @Nullable String type,
+                    @NotNull String data) {
                 eventSourceListener.onEvent(eventSource, id, type, data);
             }
 
             @Override
-            public void onFailure(@NotNull EventSource eventSource, @Nullable Throwable t, @Nullable Response response) {
+            public void onFailure(
+                    @NotNull EventSource eventSource,
+                    @Nullable Throwable t,
+                    @Nullable Response response) {
                 eventSourceListener.onFailure(eventSource, t, response);
             }
 

@@ -1,10 +1,14 @@
 package io.xka.jlite.web.serv;
 
+import io.xka.jlite.web.basic.runtime.JliteRuntime;
 import io.xka.jlite.web.serv.connector.HttpConnector;
 import io.xka.jlite.web.serv.connector.HttpsConnector;
-import io.xka.jlite.web.serv.control.*;
+import io.xka.jlite.web.serv.control.BasicServletControl;
+import io.xka.jlite.web.serv.control.ControlFactory;
+import io.xka.jlite.web.serv.control.HandlerFactory;
+import io.xka.jlite.web.serv.control.IControl;
+import io.xka.jlite.web.serv.control.IHandler;
 import io.xka.jlite.web.serv.options.SSLOptions;
-import io.xka.jlite.web.basic.runtime.JliteRuntime;
 import io.xka.jlite.web.serv.options.ServOptions;
 import jakarta.servlet.MultipartConfigElement;
 import org.eclipse.jetty.http.HttpMethod;
@@ -19,46 +23,16 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class JliteServApp {
 
     public static final String VERSION = "alpha-0.0.1";
-
-    Logger logger = LoggerFactory.getLogger(JliteServApp.class);
-
-    enum Status {
-        STARING, RUNNING, STOPPING, STOPPED
-    }
-
-    protected volatile Status STATUS = Status.STOPPED;
-
     private final Server server;
-
     private final ServOptions options;
-
-
-    private void init() {
-        SSLOptions sslOptions = options.getSslOptions();
-        List<ServerConnector> connectors = new ArrayList<>(2);
-        if (sslOptions.isEnableSSL()) {
-            HttpsConnector httpsConnector = new HttpsConnector();
-            connectors.add(httpsConnector.getConnector(server, options));
-        }
-        HttpConnector httpConnector = new HttpConnector();
-        connectors.add(httpConnector.getConnector(server, options));
-        this.server.setConnectors(connectors.toArray(new ServerConnector[0]));
-        ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
-        context.setContextPath("/");
-        ServletHolder servletHolder = context.addServlet(BasicServletControl.class, "/*");
-        servletHolder.getRegistration().setMultipartConfig(
-                new MultipartConfigElement(System.getProperty("java.io.tmpdir"))
-        );
-        this.server.setHandler(context);
-    }
-
+    protected volatile Status STATUS = Status.STOPPED;
+    Logger logger = LoggerFactory.getLogger(JliteServApp.class);
 
     public JliteServApp() {
         this.options = JliteRuntime.getServOptions();
@@ -85,6 +59,25 @@ public class JliteServApp {
         WorkerExecutors.submit(runnable);
     }
 
+    private void init() {
+        SSLOptions sslOptions = options.getSslOptions();
+        List<ServerConnector> connectors = new ArrayList<>(2);
+        if (sslOptions.isEnableSSL()) {
+            HttpsConnector httpsConnector = new HttpsConnector();
+            connectors.add(httpsConnector.getConnector(server, options));
+        }
+        HttpConnector httpConnector = new HttpConnector();
+        connectors.add(httpConnector.getConnector(server, options));
+        this.server.setConnectors(connectors.toArray(new ServerConnector[0]));
+        ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
+        context.setContextPath("/");
+        ServletHolder servletHolder = context.addServlet(BasicServletControl.class, "/*");
+        servletHolder.getRegistration().setMultipartConfig(
+                new MultipartConfigElement(System.getProperty("java.io.tmpdir"))
+        );
+        this.server.setHandler(context);
+    }
+
     private void log() {
         logger.info("\n     ____.__  .__  __          \n" +
                 "    |    |  | |__|/  |_  ____  \n" +
@@ -97,7 +90,6 @@ public class JliteServApp {
         logger.info("enable ssl: {}", options.getSslOptions().isEnableSSL());
         logger.info("enable cors: {}", options.getCorsOptions().isEnable());
     }
-
 
     public synchronized JliteServApp run() {
         if (this.STATUS != Status.STOPPED) {
@@ -179,7 +171,6 @@ public class JliteServApp {
         this.addControl(path, HttpMethod.OPTIONS, consumer);
     }
 
-
     private void addHandler(String path, Function<IHandler, Boolean> handler) {
         logger.info("jlite register handler mapping: {}", path);
         HandlerFactory.register(path, handler);
@@ -191,5 +182,9 @@ public class JliteServApp {
 
     public void uncaptured(Consumer<IControl> consumer) {
         ControlFactory.uncaptured(consumer);
+    }
+
+    enum Status {
+        STARING, RUNNING, STOPPING, STOPPED
     }
 }

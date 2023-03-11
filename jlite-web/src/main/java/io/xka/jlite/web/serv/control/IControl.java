@@ -26,21 +26,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class IControl {
 
-    Logger logger = LoggerFactory.getLogger(IControl.class);
-
     private final HttpServletRequest httpServletRequest;
-
     private final HttpServletResponse httpServletResponse;
-
     private final JsonAdopter jsonAdopter;
-
     private final ServOptions servOptions;
+    Logger logger = LoggerFactory.getLogger(IControl.class);
 
     protected IControl(
             HttpServletRequest httpServletRequest,
@@ -157,7 +152,11 @@ public class IControl {
     }
 
     public void json(Object object) {
-        this.result(HttpStatus.OK_200, IContentType.APPLICATION_JSON, StandardCharsets.UTF_8, jsonAdopter.serialize(object));
+        this.result(
+                HttpStatus.OK_200,
+                IContentType.APPLICATION_JSON,
+                StandardCharsets.UTF_8,
+                jsonAdopter.serialize(object));
     }
 
     public void json(int status, Object object) {
@@ -199,6 +198,30 @@ public class IControl {
         httpServletResponse.addCookie(cookie);
     }
 
+    public ArrayBlockingQueue<SSEEvent> sse(int capacity, Duration timeout) {
+        ArrayBlockingQueue<SSEEvent> queue = new ArrayBlockingQueue<>(capacity);
+        Runnable runnable = () -> {
+            httpServletResponse.setContentType(IContentType.TEXT_EVENT_STREAM.getName());
+            httpServletResponse.setCharacterEncoding(StandardCharsets.UTF_8.name());
+            httpServletResponse.setHeader("Cache-Control", "no-cache");
+            httpServletResponse.setHeader("Connection", "keep-alive");
+            try (ServletOutputStream outputStream = httpServletResponse.getOutputStream()) {
+                while (!Thread.currentThread().isInterrupted()) {
+                    SSEEvent sseEvent = queue.poll(timeout.getSeconds(), TimeUnit.SECONDS);
+                    if (sseEvent == null) {
+                        sseEvent = SSEEvent.ping();
+                    }
+                    outputStream.print(sseEvent.toString());
+                    outputStream.flush();
+                }
+            } catch (IOException | InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        };
+        WorkerExecutors.submit(runnable);
+        return queue;
+    }
+
     public static class SSEEvent {
         private String event;
         private String data;
@@ -206,6 +229,10 @@ public class IControl {
         public SSEEvent(String event, String data) {
             this.event = event;
             this.data = data;
+        }
+
+        public static SSEEvent ping() {
+            return new SSEEvent("ping", "ping");
         }
 
         public String getEvent() {
@@ -229,33 +256,5 @@ public class IControl {
             return "event: " + event + "\n" +
                     "data: " + data + "\n\n";
         }
-
-        public static SSEEvent ping() {
-            return new SSEEvent("ping", "ping");
-        }
-    }
-
-    public ArrayBlockingQueue<SSEEvent> sse(int capacity, Duration timeout) {
-        ArrayBlockingQueue<SSEEvent> queue = new ArrayBlockingQueue<>(capacity);
-        Runnable runnable = () -> {
-            httpServletResponse.setContentType(IContentType.TEXT_EVENT_STREAM.getName());
-            httpServletResponse.setCharacterEncoding(StandardCharsets.UTF_8.name());
-            httpServletResponse.setHeader("Cache-Control", "no-cache");
-            httpServletResponse.setHeader("Connection", "keep-alive");
-            try (ServletOutputStream outputStream = httpServletResponse.getOutputStream()) {
-                while (!Thread.currentThread().isInterrupted()) {
-                    SSEEvent sseEvent = queue.poll(timeout.getSeconds(), TimeUnit.SECONDS);
-                    if (sseEvent == null) {
-                        sseEvent = SSEEvent.ping();
-                    }
-                    outputStream.print(sseEvent.toString());
-                    outputStream.flush();
-                }
-            } catch (IOException | InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        };
-        WorkerExecutors.submit(runnable);
-        return queue;
     }
 }

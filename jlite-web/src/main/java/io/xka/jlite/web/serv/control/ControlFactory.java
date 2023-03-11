@@ -10,12 +10,9 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 public class ControlFactory {
-    private static final Map<String, Map<HttpMethod, Consumer<IControl>>> staticHandlers = new HashMap<>();
-
-    private static final Map<RegexPathEntity, Map<HttpMethod, Consumer<IControl>>> regexHandlers = new HashMap<>();
-
     final static Logger logger = LoggerFactory.getLogger(ControlFactory.class);
-
+    private static final Map<String, Map<HttpMethod, Consumer<IControl>>> staticHandlers = new HashMap<>();
+    private static final Map<RegexPathEntity, Map<HttpMethod, Consumer<IControl>>> regexHandlers = new HashMap<>();
     private static Controls uncaptured = null;
 
     public static void uncaptured(Consumer<IControl> handler) {
@@ -46,9 +43,16 @@ public class ControlFactory {
             //replace the path variable with [a-zA-Z0-9.]+
             String regexPath = path.replaceAll("\\{.*}", "[a-zA-Z0-9.]+");
             //check regex path pattern static path
-            Optional<Map.Entry<String, Map<HttpMethod, Consumer<IControl>>>> first = staticHandlers.entrySet().stream().filter(entry -> entry.getKey().matches(regexPath)).findFirst();
+            Optional<Map.Entry<String, Map<HttpMethod, Consumer<IControl>>>> first = staticHandlers
+                    .entrySet()
+                    .stream()
+                    .filter(entry -> entry.getKey().matches(regexPath))
+                    .findFirst();
             if (first.isPresent()) {
-                logger.warn("parameter paths are confused with static paths and problems can arise. {} vs {}", path, first.get().getKey());
+                logger.warn(
+                        "parameter paths are confused with static paths and problems can arise. {} vs {}",
+                        path,
+                        first.get().getKey());
             }
             RegexPathEntity regexPathEntity = new RegexPathEntity();
             regexPathEntity.setPath(path);
@@ -58,9 +62,16 @@ public class ControlFactory {
             //check static path pattern regex path
             String finalPath = path;
             Optional<Map.Entry<RegexPathEntity, Map<HttpMethod, Consumer<IControl>>>> first =
-                    regexHandlers.entrySet().stream().filter(entry -> finalPath.matches(entry.getKey().getRegex())).findFirst();
+                    regexHandlers
+                            .entrySet()
+                            .stream()
+                            .filter(entry -> finalPath.matches(entry.getKey().getRegex()))
+                            .findFirst();
             first.ifPresent(entry -> {
-                logger.warn("static paths are confused with parameter paths and problems can arise. {} vs {}", finalPath, entry.getKey().getPath());
+                logger.warn(
+                        "static paths are confused with parameter paths and problems can arise. {} vs {}",
+                        finalPath,
+                        entry.getKey().getPath());
             });
             //get the method handlers for the path
             methodHandlers = staticHandlers.computeIfAbsent(path, k -> new HashMap<>());
@@ -92,7 +103,11 @@ public class ControlFactory {
                 String[] pathValues = path.split("/");
                 for (int i = 0; i < pathVariables.length; i++) {
                     if (pathVariables[i].startsWith("{") && pathVariables[i].endsWith("}")) {
-                        controls.getKvs().put(pathVariables[i].substring(pathVariables[i].lastIndexOf("{") + 1, pathVariables[i].lastIndexOf("}")), pathValues[i]);
+                        controls
+                                .getKvs()
+                                .put(pathVariables[i].substring(
+                                        pathVariables[i].lastIndexOf("{") + 1,
+                                        pathVariables[i].lastIndexOf("}")), pathValues[i]);
                     }
                 }
                 return controls;
