@@ -1,4 +1,4 @@
-package io.xka.jlite.web.serv.control;
+package io.xka.jlite.web.serv.control.http;
 
 import org.eclipse.jetty.http.HttpMethod;
 import org.slf4j.Logger;
@@ -9,27 +9,27 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public class ControlFactory {
-    final static Logger logger = LoggerFactory.getLogger(ControlFactory.class);
-    private static final Map<String, Map<HttpMethod, Consumer<IControl>>> staticHandlers = new HashMap<>();
-    private static final Map<RegexPathEntity, Map<HttpMethod, Consumer<IControl>>> regexHandlers = new HashMap<>();
-    private static Controls uncaptured = null;
+public class HttpControlFactory {
+    final static Logger logger = LoggerFactory.getLogger(HttpControlFactory.class);
+    private static final Map<String, Map<HttpMethod, Consumer<HttpControl>>> staticHandlers = new HashMap<>();
+    private static final Map<RegexPathEntity, Map<HttpMethod, Consumer<HttpControl>>> regexHandlers = new HashMap<>();
+    private static HttpControls uncaptured = null;
 
-    public static void uncaptured(Consumer<IControl> handler) {
-        Controls controls = new Controls();
-        controls.setControl(handler);
-        controls.setKvs(new HashMap<>());
-        ControlFactory.uncaptured = controls;
+    public static void uncaptured(Consumer<HttpControl> handler) {
+        HttpControls httpControls = new HttpControls();
+        httpControls.setControl(handler);
+        httpControls.setKvs(new HashMap<>());
+        HttpControlFactory.uncaptured = httpControls;
     }
 
-    public static void register(String path, HttpMethod method, Consumer<IControl> handler) {
+    public static void register(String path, HttpMethod method, Consumer<HttpControl> handler) {
         if (path == null || path.isEmpty()) {
             throw new RuntimeException("Path cannot be null or empty");
         }
         if (!path.startsWith("/")) {
             path = "/" + path;
         }
-        Map<HttpMethod, Consumer<IControl>> methodHandlers;
+        Map<HttpMethod, Consumer<HttpControl>> methodHandlers;
         //check path variable
         if (path.contains("{") && path.contains("}")) {
             //check if the path variable is at the end
@@ -43,7 +43,7 @@ public class ControlFactory {
             //replace the path variable with [a-zA-Z0-9.]+
             String regexPath = path.replaceAll("\\{.*}", "[a-zA-Z0-9.]+");
             //check regex path pattern static path
-            Optional<Map.Entry<String, Map<HttpMethod, Consumer<IControl>>>> first = staticHandlers
+            Optional<Map.Entry<String, Map<HttpMethod, Consumer<HttpControl>>>> first = staticHandlers
                     .entrySet()
                     .stream()
                     .filter(entry -> entry.getKey().matches(regexPath))
@@ -61,7 +61,7 @@ public class ControlFactory {
         } else {
             //check static path pattern regex path
             String finalPath = path;
-            Optional<Map.Entry<RegexPathEntity, Map<HttpMethod, Consumer<IControl>>>> first =
+            Optional<Map.Entry<RegexPathEntity, Map<HttpMethod, Consumer<HttpControl>>>> first =
                     regexHandlers
                             .entrySet()
                             .stream()
@@ -83,34 +83,34 @@ public class ControlFactory {
         methodHandlers.put(method, handler);
     }
 
-    public static Controls get(String path, HttpMethod method) {
+    public static HttpControls get(String path, HttpMethod method) {
         if (path.endsWith("/") && path.length() > 1) {
             path = path.substring(0, path.length() - 1);
         }
-        Map<HttpMethod, Consumer<IControl>> methodHandlers = staticHandlers.get(path);
+        Map<HttpMethod, Consumer<HttpControl>> methodHandlers = staticHandlers.get(path);
         if (methodHandlers != null) {
-            Controls controls = new Controls();
-            controls.setControl(methodHandlers.get(method));
-            return controls;
+            HttpControls httpControls = new HttpControls();
+            httpControls.setControl(methodHandlers.get(method));
+            return httpControls;
         }
         for (RegexPathEntity regexPathEntity : regexHandlers.keySet()) {
             if (path.matches(regexPathEntity.getRegex())) {
-                Controls controls = new Controls();
-                controls.setControl(regexHandlers.get(regexPathEntity).get(method));
-                controls.setKvs(new HashMap<>());
+                HttpControls httpControls = new HttpControls();
+                httpControls.setControl(regexHandlers.get(regexPathEntity).get(method));
+                httpControls.setKvs(new HashMap<>());
                 //get the path variables
                 String[] pathVariables = regexPathEntity.getPath().split("/");
                 String[] pathValues = path.split("/");
                 for (int i = 0; i < pathVariables.length; i++) {
                     if (pathVariables[i].startsWith("{") && pathVariables[i].endsWith("}")) {
-                        controls
+                        httpControls
                                 .getKvs()
                                 .put(pathVariables[i].substring(
                                         pathVariables[i].lastIndexOf("{") + 1,
                                         pathVariables[i].lastIndexOf("}")), pathValues[i]);
                     }
                 }
-                return controls;
+                return httpControls;
             }
         }
         return uncaptured == null ? null : uncaptured;
@@ -138,24 +138,3 @@ class RegexPathEntity {
     }
 }
 
-class Controls {
-    private Consumer<IControl> control;
-
-    private Map<String, Object> kvs;
-
-    public Consumer<IControl> getControl() {
-        return control;
-    }
-
-    public void setControl(Consumer<IControl> control) {
-        this.control = control;
-    }
-
-    public Map<String, Object> getKvs() {
-        return kvs;
-    }
-
-    public void setKvs(Map<String, Object> kvs) {
-        this.kvs = kvs;
-    }
-}

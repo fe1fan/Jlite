@@ -21,6 +21,10 @@ dependencies {
     implementation 'org.eclipse.jetty.http2:http2-server:11.0.13' exclude(module: 'slf4j-api')
     //jetty-servlet
     implementation 'org.eclipse.jetty:jetty-servlet:11.0.13' exclude(module: 'slf4j-api')
+    //jetty websocket api
+    implementation 'org.eclipse.jetty.websocket:websocket-jetty-api:11.0.13' exclude(module: 'slf4j-api')
+    //jetty websocket server
+    implementation 'org.eclipse.jetty.websocket:websocket-jetty-server:11.0.13' exclude(module: 'slf4j-api')
     //log4j2 api
     implementation 'org.apache.logging.log4j:log4j-api:2.14.1'
     //log4j2 core

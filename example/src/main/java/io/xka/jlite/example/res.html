@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Screen Recording</title>
+</head>
+<body>
+<video id="show" width="640" height="360" autoplay></video>
+
+<script>
+    function str2ab(str) {
+        var buf = new ArrayBuffer(str.length*2); // 2 bytes for each char
+        var bufView = new Uint16Array(buf);
+        for (var i=0, strLen=str.length; i<strLen; i++) {
+            bufView[i] = str.charCodeAt(i);
+        }
+        return buf;
+    }
+    const videoElement2 = document.getElementById('show');
+
+    // 创建 MediaSource
+    const mediaSource = new MediaSource();
+    videoElement2.src = URL.createObjectURL(mediaSource);
+    // 创建 sse 链接
+    const sse = new EventSource('http://localhost:8080/sse');
+    mediaSource.addEventListener('sourceopen', () => {
+        // 创建新的 sourceBuffer
+        const sourceBuffer = mediaSource.addSourceBuffer('video/webm;codecs=vp8"');
+        // 监听 WebSocket 的 message 事件，并向 sourceBuffer 中添加数据
+        sse.addEventListener('message', async function (event) {
+            sourceBuffer.appendBuffer(str2ab(event.data));
+        });
+    });
+    sse.addEventListener('ping', async function (event) {
+        console.log(typeof event.data);
+    });
+</script>
+</body>
+</html>

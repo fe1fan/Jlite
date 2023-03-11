@@ -1,4 +1,4 @@
-package io.xka.jlite.web.serv.control;
+package io.xka.jlite.web.serv.control.http;
 
 import io.xka.jlite.web.basic.runtime.JliteRuntime;
 import io.xka.jlite.web.basic.serializer.JsonAdopter;
@@ -29,15 +29,15 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-public class IControl {
+public class HttpControl {
 
     private final HttpServletRequest httpServletRequest;
     private final HttpServletResponse httpServletResponse;
     private final JsonAdopter jsonAdopter;
     private final ServOptions servOptions;
-    Logger logger = LoggerFactory.getLogger(IControl.class);
+    Logger logger = LoggerFactory.getLogger(HttpControl.class);
 
-    protected IControl(
+    public HttpControl(
             HttpServletRequest httpServletRequest,
             HttpServletResponse httpServletResponse) {
         this.httpServletRequest = httpServletRequest;
@@ -124,7 +124,7 @@ public class IControl {
     //---------------------------------- response ---------------------------------------//
 
     //---------------------------------- text ---------------------------------------//
-    public void result(int status, IContentType contentType, Charset charset, Object result) {
+    public void result(int status, HttpContentType contentType, Charset charset, Object result) {
         httpServletResponse.setStatus(status);
         httpServletResponse.setContentType(contentType.getName());
         httpServletResponse.setCharacterEncoding(charset.name());
@@ -136,36 +136,36 @@ public class IControl {
     }
 
     public void result(String result) {
-        this.result(HttpStatus.OK_200, IContentType.TEXT_PLAIN, StandardCharsets.UTF_8, result);
+        this.result(HttpStatus.OK_200, HttpContentType.TEXT_PLAIN, StandardCharsets.UTF_8, result);
     }
 
     public void result(int status, String result) {
-        this.result(status, IContentType.TEXT_PLAIN, StandardCharsets.UTF_8, result);
+        this.result(status, HttpContentType.TEXT_PLAIN, StandardCharsets.UTF_8, result);
     }
 
-    public void result(IContentType contentType, String result) {
+    public void result(HttpContentType contentType, String result) {
         this.result(HttpStatus.OK_200, contentType, StandardCharsets.UTF_8, result);
     }
 
-    public void result(int status, IContentType contentType, String result) {
+    public void result(int status, HttpContentType contentType, String result) {
         this.result(status, contentType, StandardCharsets.UTF_8, result);
     }
 
     public void json(Object object) {
         this.result(
                 HttpStatus.OK_200,
-                IContentType.APPLICATION_JSON,
+                HttpContentType.APPLICATION_JSON,
                 StandardCharsets.UTF_8,
                 jsonAdopter.serialize(object));
     }
 
     public void json(int status, Object object) {
-        this.result(status, IContentType.APPLICATION_JSON, StandardCharsets.UTF_8, jsonAdopter.serialize(object));
+        this.result(status, HttpContentType.APPLICATION_JSON, StandardCharsets.UTF_8, jsonAdopter.serialize(object));
     }
 
 
     //------------------------------- file ------------------------------------------//
-    public void file(int status, IContentType contentType, Charset charset, byte[] file) {
+    public void file(int status, HttpContentType contentType, Charset charset, byte[] file) {
         httpServletResponse.setStatus(status);
         httpServletResponse.setContentType(contentType.getName());
         httpServletResponse.setCharacterEncoding(charset.name());
@@ -176,11 +176,11 @@ public class IControl {
         }
     }
 
-    public void file(IContentType contentType, byte[] file) {
+    public void file(HttpContentType contentType, byte[] file) {
         this.file(HttpStatus.OK_200, contentType, StandardCharsets.UTF_8, file);
     }
 
-    public void file(int status, IContentType contentType, byte[] file) {
+    public void file(int status, HttpContentType contentType, byte[] file) {
         this.file(status, contentType, StandardCharsets.UTF_8, file);
     }
 
@@ -201,7 +201,7 @@ public class IControl {
     public ArrayBlockingQueue<SSEEvent> sse(int capacity, Duration timeout) {
         ArrayBlockingQueue<SSEEvent> queue = new ArrayBlockingQueue<>(capacity);
         Runnable runnable = () -> {
-            httpServletResponse.setContentType(IContentType.TEXT_EVENT_STREAM.getName());
+            httpServletResponse.setContentType(HttpContentType.TEXT_EVENT_STREAM.getName());
             httpServletResponse.setCharacterEncoding(StandardCharsets.UTF_8.name());
             httpServletResponse.setHeader("Cache-Control", "no-cache");
             httpServletResponse.setHeader("Connection", "keep-alive");
@@ -215,7 +215,14 @@ public class IControl {
                     outputStream.flush();
                 }
             } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
                 Thread.currentThread().interrupt();
+            } finally {
+                try {
+                    httpServletResponse.getOutputStream().close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         };
         WorkerExecutors.submit(runnable);
@@ -224,15 +231,15 @@ public class IControl {
 
     public static class SSEEvent {
         private String event;
-        private String data;
+        private byte[] data;
 
-        public SSEEvent(String event, String data) {
+        public SSEEvent(String event, byte[] data) {
             this.event = event;
             this.data = data;
         }
 
         public static SSEEvent ping() {
-            return new SSEEvent("ping", "ping");
+            return new SSEEvent("ping", "ping".getBytes(StandardCharsets.UTF_8));
         }
 
         public String getEvent() {
@@ -243,11 +250,11 @@ public class IControl {
             this.event = event;
         }
 
-        public String getData() {
+        public byte[] getData() {
             return data;
         }
 
-        public void setData(String data) {
+        public void setData(byte[] data) {
             this.data = data;
         }
 

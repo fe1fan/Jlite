@@ -1,9 +1,10 @@
-package io.xka.jlite.web.serv.control;
+package io.xka.jlite.web.serv.control.http;
 
-public enum IContentType {
+public enum HttpContentType {
     MULTIPART_FORM_DATA("multipart/form-data"),
     APPLICATION_X_WWW_FORM_URLENCODED("application/x-www-form-urlencoded"),
     APPLICATION_OCTET_STREAM("application/octet-stream"),
+    APPLICATION_X_MPEGURL("application/x-mpegURL"),
     APPLICATION_JSON("application/json"),
     APPLICATION_XML("application/xml"),
     TEXT_HTML("text/html"),
@@ -34,7 +35,7 @@ public enum IContentType {
 
     private final String name;
 
-    IContentType(String name) {
+    HttpContentType(String name) {
         this.name = name;
     }
 

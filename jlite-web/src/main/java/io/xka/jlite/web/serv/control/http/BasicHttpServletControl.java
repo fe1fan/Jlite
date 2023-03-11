@@ -1,4 +1,4 @@
-package io.xka.jlite.web.serv.control;
+package io.xka.jlite.web.serv.control.http;
 
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,30 +9,30 @@ import org.slf4j.LoggerFactory;
 
 import java.util.function.Function;
 
-public class BasicServletControl extends HttpServlet {
+public class BasicHttpServletControl extends HttpServlet {
 
-    Logger logger = LoggerFactory.getLogger(BasicServletControl.class);
+    Logger logger = LoggerFactory.getLogger(BasicHttpServletControl.class);
 
     private void handle(HttpServletRequest req, HttpServletResponse resp) {
         String path = req.getRequestURI().substring(req.getContextPath().length());
-        Function<IHandler, Boolean> handler = HandlerFactory.get(path);
+        Function<HttpHandler, Boolean> handler = HttpHandlerFactory.get(path);
         if (handler != null) {
-            Boolean apply = handler.apply(new IHandler(req, resp));
+            Boolean apply = handler.apply(new HttpHandler(req, resp));
             if (apply != null && !apply) {
                 return;
             }
         }
-        Controls controls = ControlFactory.get(
+        HttpControls httpControls = HttpControlFactory.get(
                 req.getRequestURI().substring(req.getContextPath().length()),
                 HttpMethod.valueOf(req.getMethod()));
-        if (controls == null || controls.getControl() == null) {
+        if (httpControls == null || httpControls.getControl() == null) {
             resp.setStatus(404);
             return;
         }
-        if (controls.getKvs() != null && !controls.getKvs().isEmpty()) {
-            controls.getKvs().forEach(req::setAttribute);
+        if (httpControls.getKvs() != null && !httpControls.getKvs().isEmpty()) {
+            httpControls.getKvs().forEach(req::setAttribute);
         }
-        controls.getControl().accept(new IControl(req, resp));
+        httpControls.getControl().accept(new HttpControl(req, resp));
     }
 
     @Override

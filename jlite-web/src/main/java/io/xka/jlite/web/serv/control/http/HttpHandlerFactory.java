@@ -1,14 +1,14 @@
-package io.xka.jlite.web.serv.control;
+package io.xka.jlite.web.serv.control.http;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
-public class HandlerFactory {
-    private static final Map<String, Function<IHandler, Boolean>> handlers = new HashMap<>();
+public class HttpHandlerFactory {
+    private static final Map<String, Function<HttpHandler, Boolean>> handlers = new HashMap<>();
 
-    public static void register(String path, Function<IHandler, Boolean> handler) {
+    public static void register(String path, Function<HttpHandler, Boolean> handler) {
         if (path == null || path.isEmpty()) {
             throw new RuntimeException("path cannot be null or empty");
         }
@@ -22,7 +22,7 @@ public class HandlerFactory {
         handlers.put(path, handler);
     }
 
-    public static Function<IHandler, Boolean> get(String path) {
+    public static Function<HttpHandler, Boolean> get(String path) {
         //equals
         Optional<String> first = handlers.keySet().stream().filter(path::equals).findFirst();
         if (first.isPresent()) {

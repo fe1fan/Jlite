@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Screen Recording</title>
+</head>
+<body>
+<video id="local" width="640" height="360" autoplay></video>
+<video id="show" width="640" height="360" autoplay></video>
+
+<script>
+    const videoElement = document.getElementById('local');
+    const videoElement2 = document.getElementById('show');
+
+    // 创建 WebSocket 连接
+    const ws = new WebSocket('ws://localhost:8080/ws');
+    // 创建 MediaSource
+    const mediaSource = new MediaSource();
+    videoElement2.src = URL.createObjectURL(mediaSource);
+    mediaSource.addEventListener('sourceopen', () => {
+        // 创建新的 sourceBuffer
+        const sourceBuffer = mediaSource.addSourceBuffer('video/webm;codecs=vp8"');
+        // 监听 WebSocket 的 message 事件，并向 sourceBuffer 中添加数据
+        ws.addEventListener("message", async function (event) {
+            // const blob = new Blob([event.data], { type: 'video/webm;codecs=vp8"' });
+            // console.log("receive: ", blob)
+            var buffer = await event.data.arrayBuffer();
+            // console.log(event.data)
+            sourceBuffer.appendBuffer(buffer);
+        });
+    });
+    // 获取屏幕流
+    navigator.mediaDevices.getDisplayMedia({video: true, audio: false})
+        .then(function (stream) {
+            // 将屏幕流添加到 video 元素中
+            videoElement.srcObject = stream;
+
+            // 创建 MediaRecorder
+            const mediaRecorder = new MediaRecorder(stream, {
+                mimeType: 'video/webm;codecs=vp8"',
+            });
+
+            // 监听数据可用
+            mediaRecorder.addEventListener('dataavailable', function (event) {
+                // 将录制的数据发送给 WebSocket
+                console.log("send: ", event.data)
+                ws.send(event.data);
+            });
+
+            // 开始录制
+            mediaRecorder.start(1);
+
+
+        })
+        .catch(function (error) {
+            console.error('getDisplayMedia error:', error);
+        });
+</script>
+</body>
+</html>
