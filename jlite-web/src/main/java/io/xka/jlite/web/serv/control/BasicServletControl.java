@@ -30,7 +30,9 @@ public class BasicServletControl extends HttpServlet {
         if (controls.getKvs() != null && !controls.getKvs().isEmpty()) {
             controls.getKvs().forEach(req::setAttribute);
         }
-        controls.getControl().accept(new IControl(req, resp));
+        IControl iControl = new IControl(req, resp);
+        controls.getControl().accept(iControl);
+        iControl = null;
     }
 
     @Override

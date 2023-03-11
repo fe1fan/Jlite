@@ -2,6 +2,7 @@ package io.xka.jlite.web.serv.control;
 
 import io.xka.jlite.web.basic.runtime.JliteRuntime;
 import io.xka.jlite.web.basic.serializer.JsonAdopter;
+import io.xka.jlite.web.serv.WorkerExecutors;
 import io.xka.jlite.web.serv.options.CORSOptions;
 import io.xka.jlite.web.serv.options.ServOptions;
 import jakarta.servlet.ServletException;
@@ -19,11 +20,14 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class IControl {
@@ -38,7 +42,9 @@ public class IControl {
 
     private final ServOptions servOptions;
 
-    protected IControl(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
+    protected IControl(
+            HttpServletRequest httpServletRequest,
+            HttpServletResponse httpServletResponse) {
         this.httpServletRequest = httpServletRequest;
         this.httpServletResponse = httpServletResponse;
 
@@ -217,27 +223,39 @@ public class IControl {
         public void setData(String data) {
             this.data = data;
         }
+
+        @Override
+        public String toString() {
+            return "event: " + event + "\n" +
+                    "data: " + data + "\n\n";
+        }
+
+        public static SSEEvent ping() {
+            return new SSEEvent("ping", "ping");
+        }
     }
 
-    //test version
-    public ArrayBlockingQueue<SSEEvent> sse(int capacity) {
+    public ArrayBlockingQueue<SSEEvent> sse(int capacity, Duration timeout) {
         ArrayBlockingQueue<SSEEvent> queue = new ArrayBlockingQueue<>(capacity);
-        new Thread(() -> {
+        Runnable runnable = () -> {
             httpServletResponse.setContentType(IContentType.TEXT_EVENT_STREAM.getName());
             httpServletResponse.setCharacterEncoding(StandardCharsets.UTF_8.name());
+            httpServletResponse.setHeader("Cache-Control", "no-cache");
+            httpServletResponse.setHeader("Connection", "keep-alive");
             try (ServletOutputStream outputStream = httpServletResponse.getOutputStream()) {
                 while (!Thread.currentThread().isInterrupted()) {
-                    SSEEvent sseEvent = queue.take();
-                    outputStream.println(sseEvent.getData());
-                    outputStream.println();
+                    SSEEvent sseEvent = queue.poll(timeout.getSeconds(), TimeUnit.SECONDS);
+                    if (sseEvent == null) {
+                        sseEvent = SSEEvent.ping();
+                    }
+                    outputStream.print(sseEvent.toString());
                     outputStream.flush();
                 }
             } catch (IOException | InterruptedException e) {
                 Thread.currentThread().interrupt();
-                logger.error("SSE error", e);
-                throw new RuntimeException(e);
             }
-        }).start();
+        };
+        WorkerExecutors.submit(runnable);
         return queue;
     }
 }

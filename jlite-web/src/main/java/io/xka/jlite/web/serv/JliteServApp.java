@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -55,8 +56,6 @@ public class JliteServApp {
         servletHolder.getRegistration().setMultipartConfig(
                 new MultipartConfigElement(System.getProperty("java.io.tmpdir"))
         );
-        //not found
-
         this.server.setHandler(context);
     }
 
@@ -71,6 +70,19 @@ public class JliteServApp {
         );
         this.server = new Server(threadPool);
         this.init();
+        WorkerExecutors.init();
+        //定时检测线程池状态
+        Runnable runnable = () -> {
+            while (true) {
+                try {
+                    Thread.sleep(10_000);
+                    WorkerExecutors.dump();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        };
+        WorkerExecutors.submit(runnable);
     }
 
     private void log() {
@@ -107,6 +119,9 @@ public class JliteServApp {
                     logger.info("Jlite Server Stopping...");
                     this.server.stop();
                     logger.info("Jlite Server Stopped");
+                    logger.info("Jlite Server WorkerExecutors Stopping...");
+                    WorkerExecutors.shutdown();
+                    logger.info("Jlite Server WorkerExecutors Stopped");
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }

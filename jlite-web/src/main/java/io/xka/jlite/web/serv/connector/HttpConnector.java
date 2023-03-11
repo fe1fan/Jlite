@@ -13,7 +13,7 @@ public class HttpConnector {
         ServerConnector connector = new ServerConnector(server, new HttpConnectionFactory(configuration));
         connector.setPort(servOptions.getPort());
         connector.setHost(servOptions.getHost());
-        connector.setIdleTimeout(50000);
+        connector.setIdleTimeout(10_000);
         return connector;
     }
 }

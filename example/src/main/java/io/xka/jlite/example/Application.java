@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONPath;
 import io.xka.jlite.example.chatgpt.BO;
 import io.xka.jlite.example.chatgpt.VO;
-import io.xka.jlite.web.basic.serializer.JacksonInternal;
 import io.xka.jlite.web.basic.serializer.JsonAdopter;
 import io.xka.jlite.web.cli.JliteCli;
 import io.xka.jlite.web.cli.JliteCliApp;
@@ -17,8 +16,7 @@ import okhttp3.sse.EventSourceListener;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -95,7 +93,7 @@ public class Application {
             }
             VO orDefault = cache.getOrDefault(session, new VO());
             orDefault.addMessage("user", ctl.getQuery("message"));
-            ArrayBlockingQueue<IControl.SSEEvent> queue = ctl.sse(10);
+            ArrayBlockingQueue<IControl.SSEEvent> queue = ctl.sse(10, Duration.ofSeconds(10));
             ArrayBlockingQueue<IControl.SSEEvent> listenerQueue = new ArrayBlockingQueue<>(10);
             Listener listener = new Listener(listenerQueue);
             quick.http().sse(

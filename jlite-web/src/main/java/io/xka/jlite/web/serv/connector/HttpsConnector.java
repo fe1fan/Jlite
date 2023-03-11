@@ -23,7 +23,7 @@ public class HttpsConnector {
         ServerConnector connector = new ServerConnector(server, new SslConnectionFactory(sslContextFactory, HttpVersion.HTTP_1_1.asString()), new HttpConnectionFactory(configuration));
         connector.setPort(servOptions.getSslOptions().getSslPort());
         connector.setHost(servOptions.getHost());
-        connector.setIdleTimeout(500000);
+        connector.setIdleTimeout(10_000);
         return connector;
     }
 }
